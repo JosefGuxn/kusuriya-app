@@ -277,7 +277,8 @@ export default {
       this.$store.dispatch('addProduct', newProduct)
     },
     addProductAndClose () {
-      this.addProduct
+      this.addProduct()
+      this.resetForm()
       this.isAddMode = false
     },
     resetForm () {
