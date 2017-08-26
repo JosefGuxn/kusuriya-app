@@ -38,5 +38,6 @@ export default {
 <style scoped>
 .modal-card {
   width: 400px;
+  z-index: 20;
 }
 </style>
