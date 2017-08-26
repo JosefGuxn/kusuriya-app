@@ -5,7 +5,8 @@ const state = {
 }
 
 const getters = {
-  productsGetter: state => state.all
+  productsGetter: state => state.all,
+  productsArrGetter: state => Object.values(state.all)
 }
 
 const mutations = {
