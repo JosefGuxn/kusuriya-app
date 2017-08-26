@@ -265,13 +265,13 @@ export default {
   methods: {
     addProduct () {
       var newProduct = {
-        category: this.category,
-        product_name: this.productName,
-        chemical: this.chemical,
-        class: this.dClass,
-        stock_number: this.stockNumber,
-        uom_wsale: this.uomWSale,
-        uom_retail: this.uomRetail,
+        category: this.category || this.categories[0],
+        product_name: this.productName || '',
+        chemical: this.chemical || '',
+        class: this.dClass || this.classes[13],
+        stock_number: this.stockNumber || '',
+        uom_wsale: this.uomWSale || this.uoms[0],
+        uom_retail: this.uomRetail || this.uoms[0],
         uom_rate: this.uomRate
       }
       this.$store.dispatch('addProduct', newProduct)
