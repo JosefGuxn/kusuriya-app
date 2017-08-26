@@ -27,7 +27,13 @@
               </template>
               <template scope="props">
                 <b-table-column label="Danh Mục" width="160">
-                  <b-input v-model="props.row.category"></b-input>
+                  <b-select :placeholder="props.row.category.value" 
+                  v-model="props.row.category" expanded>
+                    <option :value="category"
+                    v-for="category in categories" :key="category.key">
+                      {{ category.value }}
+                    </option>
+                  </b-select>
                 </b-table-column>
 
                 <b-table-column label="Sản Phẩm">
@@ -35,23 +41,41 @@
                 </b-table-column>
 
                 <b-table-column label="Hoạt Chất" width="130">
-                  <b-input v-model="props.row.chemical"></b-input>
+                  <b-input v-model="props.row.chemical.value"></b-input>
                 </b-table-column>
 
                 <b-table-column label="Nhóm Dược" width="180">
-                  <b-input v-model="props.row.class"></b-input>
+                  <b-select :placeholder="props.row.class.value" 
+                  v-model="props.row.class" expanded>
+                    <option :value="dclass"
+                    v-for="dclass in classes" :key="dclass.key">
+                      {{ dclass.value }}
+                    </option>
+                  </b-select>
                 </b-table-column>
 
                 <b-table-column label="Số Lô" width="120">
                   <b-input v-model="props.row.stock_number"></b-input>
                 </b-table-column>
 
-                <b-table-column label="ĐVT Sỉ" width="100">
-                  <b-input v-model="props.row.uom_wsale"></b-input>
+                <b-table-column label="ĐVT Sỉ" width="110">
+                  <b-select :placeholder="props.row.uom_wsale.value" 
+                  v-model="props.row.uom_wsale" expanded>
+                    <option :value="uom"
+                    v-for="uom in uoms" :key="uom.key">
+                      {{ uom.value }}
+                    </option>
+                  </b-select>
                 </b-table-column>
 
                 <b-table-column label="ĐVT Lẻ" width="110">
-                  <b-input v-model="props.row.uom_retail"></b-input>
+                  <b-select :placeholder="props.row.uom_retail.value" 
+                  v-model="props.row.uom_retail" expanded>
+                    <option :value="uom"
+                    v-for="uom in uoms" :key="uom.key">
+                      {{ uom.value }}
+                    </option>
+                  </b-select>
                 </b-table-column>
 
                 <b-table-column label="Đv Bán Sỉ/Đv Bán Lẻ" width="140">
@@ -210,27 +234,14 @@ export default {
     ModalForm
   },
   data () {
-    const tableData = [
-      {
-        category: 'tmp',
-        product_name: 'Vifticol',
-        chemical: '',
-        class: '',
-        stock_number: 'NT41',
-        uom_wsale: 'Lọ',
-        uom_retail: 'Lọ',
-        uom_rate: '10'
-      }
-    ]
     return {
-      tableData,
       formatter: (date) => date.toLocaleDateString('vi-VN'),
-      isAddMode: true,
+      isAddMode: false,
       category: null,
-      productName: '',
+      productName: null,
       chemical: null,
       dClass: null,
-      stockNumber: '',
+      stockNumber: null,
       uomWSale: null,
       uomRetail: null,
       uomRate: 0,
@@ -244,6 +255,7 @@ export default {
   },
   computed: {
     ...mapGetters({
+      tableData: 'productsArrGetter',
       categories: 'categoriesArrGetter',
       chemicals: 'chemicalsArrGetter',
       classes: 'classesArrGetter',
