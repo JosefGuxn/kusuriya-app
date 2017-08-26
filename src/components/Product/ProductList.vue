@@ -12,7 +12,8 @@
                 <b-icon icon="plus"></b-icon>
                 <span>Thêm Sản Phẩm</span>
               </button>
-              <button class="button is-primary">
+              <button class="button is-primary"
+              @click="test">
                 <b-icon icon="print"></b-icon>
                 <span>Print</span>
               </button>
@@ -142,13 +143,16 @@
             </div>
             <div class="tile is-child productName">
               <strong>Tên sản phẩm</strong>
-              <b-input ref="inputProductName" v-model="productName"></b-input>
+              <b-field :type="productName === '' ? 'is-danger':''">
+                <b-input ref="inputProductName" v-model="productName">
+                </b-input>
+              </b-field>
             </div>
             <div class="tile is-child">
               <strong>Hoạt chất</strong>
               <b-field grouped>
-                <b-autocomplete
-                :data="chemicals" 
+                <b-autocomplete v-model="chemicalValue"
+                :data="filteredChemicals" 
                 @select="o => chemical = o"
                 expanded keep-first>
                 </b-autocomplete>
@@ -172,7 +176,7 @@
               </b-field>
             </div>
             <div class="tile is-child">
-              <strong>Số Lô</strong>
+              <strong>Số lô</strong>
               <b-input v-model="stockNumber"></b-input>
             </div>
             <div class="tile is-child">
@@ -238,7 +242,7 @@ export default {
       formatter: (date) => date.toLocaleDateString('vi-VN'),
       isAddMode: false,
       category: null,
-      productName: null,
+      productName: '',
       chemical: null,
       dClass: null,
       stockNumber: null,
@@ -250,7 +254,9 @@ export default {
         info: '',
         action: ''
       },
-      modalValue: ''
+      modalValue: '',
+      chemicalValue: '',
+      inputProductNameType: ''
     }
   },
   computed: {
@@ -260,13 +266,27 @@ export default {
       chemicals: 'chemicalsArrGetter',
       classes: 'classesArrGetter',
       uoms: 'uomsArrGetter'
-    })
+    }),
+    filteredChemicals () {
+      return this.chemicals.filter((option) => {
+        return option.value
+          .toString()
+          .toLowerCase()
+          .indexOf(this.chemicalValue.toLowerCase()) >= 0
+      })
+    }
   },
   methods: {
+    newProductValadate () {
+      if (this.productName === '') {
+        return false
+      }
+      return true
+    },
     addProduct () {
       var newProduct = {
         category: this.category || this.categories[0],
-        product_name: this.productName || '',
+        product_name: this.productName.charAt(0).toUpperCase() + this.productName.slice(1),
         chemical: this.chemical || '',
         class: this.dClass || this.classes[13],
         stock_number: this.stockNumber || '',
@@ -276,22 +296,31 @@ export default {
       }
       this.$store.dispatch('addProduct', newProduct)
     },
-    addProductAndClose () {
-      this.addProduct()
-      this.resetForm()
-      this.isAddMode = false
-    },
     resetForm () {
       // this.category = null
-      this.productName = null
+      this.productName = ''
       this.chemical = null
       this.dClass = null
       this.stockNumber = null
       this.uomWSale = null
       this.uomRetail = null
       this.uomRate = 0
+      this.inputProductNameType = ''
+    },
+    addProductAndClose () {
+      if (!this.newProductValadate()) {
+        return null
+      }
+
+      this.addProduct()
+      this.resetForm()
+      this.isAddMode = false
     },
     addProductAndReset () {
+      if (!this.newProductValadate()) {
+        return null
+      }
+
       this.addProduct()
       this.resetForm()
       this.$refs.inputProductName.focus()
@@ -316,6 +345,9 @@ export default {
       this.formProps.info = 'Đơn vị'
       this.formProps.action = 'addUom'
       this.isModalActive = true
+    },
+    test () {
+      console.log(this.tableData[0].product_name)
     }
   }
 }

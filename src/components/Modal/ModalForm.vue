@@ -27,7 +27,7 @@ export default {
   methods: {
     submit () {
       this.$store.dispatch(this.action, {
-        value: this.value
+        value: this.value.charAt(0).toUpperCase() + this.value.slice(1)
       })
       this.$parent.close()
     }
