@@ -32,6 +32,7 @@ new Vue({
       projectId: 'nhathuoc41-9ecce',
       storageBucket: ''
     })
+    this.$store.dispatch('receiveProducts')
     this.$store.dispatch('receiveCategories')
     this.$store.dispatch('receiveChemicals')
     this.$store.dispatch('receiveClasses')
