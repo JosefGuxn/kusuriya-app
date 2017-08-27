@@ -91,7 +91,7 @@
                       </button>
                     </div>
                     <div class="tile is-child">
-                      <button class="button is-danger is-outlined" @click="deleteRow(props.row)">
+                      <button class="button is-danger is-outlined" @click="confirmRemoveProduct(props.row)">
                         <b-icon icon="trash-o"></b-icon>
                       </button>
                     </div>
@@ -345,6 +345,19 @@ export default {
       this.formProps.info = 'Đơn vị'
       this.formProps.action = 'addUom'
       this.isModalActive = true
+    },
+    confirmRemoveProduct (obj) {
+      this.$dialog.confirm({
+        title: 'Xóa Sản phẩm',
+        message: `Bạn có chắc chắn muốn <b>xóa</b> sản phẩm ${obj.product_name} không?`,
+        confirmText: 'Xóa Sản phẩm',
+        type: 'is-danger',
+        hasIcon: true,
+        onConfirm: () => this.removeProduct(obj)
+      })
+    },
+    removeProduct (product) {
+      this.$store.dispatch('removeProduct', product)
     },
     test () {
       console.log(this.tableData[0].product_name)

@@ -31,6 +31,16 @@ const actions = {
       console.log(error)
     })
   },
+  removeProduct ({ commit }, product) {
+    firebase.database().ref('products/' + product.key).remove()
+      .then(() => {
+        commit('PUSH_NOTIF', { type: 'is-success', message: 'Xóa Sản phẩm thành công.' })
+      })
+      .catch(err => {
+        commit('PUSH_NOTIF', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+        console.log(err)
+      })
+  },
   receiveProducts ({ commit }) {
     // TODO: do async, notifi
     firebase.database().ref('products').on('value', products => {
