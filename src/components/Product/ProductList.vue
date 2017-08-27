@@ -118,7 +118,7 @@
         <b-panel has-custom-template>
           <div class="tile is-size-3" slot="header">
             <strong class="tile is-child">
-              Thêm Sản phẩm
+              Cập nhật Sản phẩm
             </strong>
             <div class="tile is-child is-1 has-text-right">
               <button class="button" @click="isAddMode = false">
