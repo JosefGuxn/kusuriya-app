@@ -24,10 +24,15 @@ const actions = {
     var updates = {}
     updates['/products/' + newProductKey] = newProduct
 
-    // TODO: do async, notifi
-    firebase.database().ref().update(updates)
+    firebase.database().ref().update(updates).then(() => {
+      commit('PUSH_NOTIF', { type: 'is-success', message: 'Cập nhật Sản phẩm thành công.' })
+    }).catch(error => {
+      commit('PUSH_NOTIF', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+      console.log(error)
+    })
   },
-  receiveProducts ({commit}) {
+  receiveProducts ({ commit }) {
+    // TODO: do async, notifi
     firebase.database().ref('products').on('value', products => {
       commit('RECEIVE_PRODUCTS', { products })
     })

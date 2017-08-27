@@ -99,7 +99,12 @@
 
 <script>
   export default {
-    name: 'ksrya'
+    name: 'ksrya',
+    mounted () {
+      this.$store.watch(this.$store.getters.notifsGetter, () => {
+        this.$toast.open(this.$store.getters.newNotifGetter)
+      })
+    }
   }
 </script>
 
