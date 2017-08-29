@@ -20,7 +20,7 @@
             </div>
           </div>
           <div class="content">
-            <b-table :data="tableData" bordered striped>
+            <b-table :data="tableData" per-page="10" pagination-simple bordered striped paginated>
               <template slot="header" scope="props">
                 <strong class="is-size-6">
                   {{props.column.label}}
