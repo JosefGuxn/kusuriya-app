@@ -1,27 +1,38 @@
 <template>
   <div class="container is-fluid">
     <b-panel has-custom-template>
-      <div class="is-size-3" slot="header">
-        <div class="columns">
-          <strong class="column is-9 has-text-primary">
-            Phiếu nhập
-          </strong>
-          <div class="column is-narrow">
-            <button class="button is-primary">Lưu</button>   
-            <button class="button is-primary">Lưu & Tạo phiếu mới</button>
-          </div>
+      <div class="is-size-3 tile" slot="header">
+        <strong class="tile is-child has-text-primary">
+          Phiếu nhập kho
+        </strong>
+        <div class="tile is-child is-4 has-text-right">         
+          <button class="button is-primary"
+          @click="importSheet">
+            <b-icon icon="floppy-o"></b-icon>
+            <span>Lưu</span>
+          </button>
+          <button class="button is-primary"
+          >
+            <span>Lưu & Nhập mới</span>
+          </button>
         </div>
       </div>
       <div class="panel-block">        
         <div class="container columns">
-          <strong class="column is-3 has-text-right is-size-5">Nhà cung ứng</strong>
+          <strong class="column is-3 has-text-right is-size-5">Nhà cung cấp</strong>
           <div class="column is-6">
             <b-field grouped>
               <div class="control is-expanded">
-                <b-input value="NT41" ></b-input>
+                <b-select placeholder="Chọn nhà cung cấp" 
+                  v-model="supplier" expanded>
+                  <option :value="suppliers"
+                  v-for="supp in suppliers" :key="supp.key">
+                    {{ supp.value }}
+                  </option>
+                </b-select>
               </div>
               <div class="control">
-                <button class="button is-warning has-text-white">
+                <button class="button is-warning has-text-white" @click="addSupplier">
                   <b-icon icon="plus"></b-icon>
                 </button>
               </div>
@@ -35,7 +46,7 @@
           <div class="column is-6">
             <b-field>
               <div class="control">
-                <b-datepicker v-model="date" :date-formatter="formatter">
+                <b-datepicker v-model="sheet_date" :date-formatter="formatter">
                 </b-datepicker>
               </div>
             </b-field>
@@ -60,14 +71,14 @@
           <div class="column is-6">
             <b-field>
               <div class="control">
-                <b-input value="NT41" type="textarea"></b-input>
+                <b-input v-model="note" type="textarea"></b-input>
               </div>            
             </b-field>
           </div>
         </div>
       </div>
       <div class="content" style="margin-top: 20px">
-        <b-table :data="tableData" narrowed bordered>
+        <b-table :data="entries" narrowed bordered>
           <template slot="header" scope="props">
             <strong class="is-size-5">
               {{props.column.label}}
@@ -75,7 +86,13 @@
           </template>
           <template scope="props">               
             <b-table-column label="Sản Phẩm">
-              <b-input v-model="props.row.item_name"></b-input>  
+              <b-select
+                  v-model="props.row.product" expanded>
+                <option :value="product"
+                v-for="product in products" :key="product.key">
+                  {{ product.product_name }}
+                </option>
+              </b-select>
             </b-table-column>
 
             <b-table-column label="Số Lô" width="110">
@@ -83,7 +100,7 @@
             </b-table-column>
 
             <b-table-column label="Đơn Vị" width="110">
-              <b-input v-model="props.row.unit_of_ms"></b-input>
+              <b-input v-model="props.row.unit_of_ms">{{props.row.product.uom_wsale}}</b-input>
             </b-table-column>
 
             <b-table-column label="Số Lượng" width="140">
@@ -129,40 +146,86 @@
         </button>
       </div>
     </b-panel>
+    <b-modal :active.sync="isModalActive" has-modal-card>
+      <modal-form v-bind="formProps"></modal-form>
+    </b-modal>
   </div>
 </template>
 
 <script>
+  import ModalForm from '@/components/Modal/ModalForm'
+  import { mapGetters } from 'vuex'
   import _ from 'lodash'
   export default {
+    components: {
+      ModalForm
+    },
     data () {
-      var tableData = [
-      ]
       return {
-        tableData,
+        entries: [],
         editable: false,
-        date: new Date(),
-        formatter: (date) => date.toLocaleDateString('vi-VN')
+        formatter: (date) => date.toLocaleDateString('vi-VN'),
+        formProps: {
+          info: '',
+          action: ''
+        },
+        isModalActive: false,
+        supplier: null,
+        sheet_date: new Date(),
+        is_consigned: false,
+        note: null
       }
+    },
+    computed: {
+      ...mapGetters({
+        products: 'productsArrGetter',
+        categories: 'categoriesArrGetter',
+        chemicals: 'chemicalsArrGetter',
+        classes: 'classesArrGetter',
+        uoms: 'uomsArrGetter',
+        suppliers: 'suppliersArrGetter'
+      })
     },
     methods: {
       addRow (obj) {
-        this.tableData.push(
+        this.entries.push(
           {
             id: _.random(1111, 9999),
-            item_name: 'Vifticol',
-            stock_number: 'NT41',
-            unit_of_ms: 'Lọ',
-            quantity: '10',
+            product: {},
+            stock_number: '',
+            unit_of_ms: '',
+            quantity: 0,
             exp_date: new Date(),
-            unit_price: '10000',
-            wsale_price: '10000',
-            retail_price: '11000'
+            unit_price: '',
+            wsale_price: '',
+            retail_price: ''
           }
         )
       },
       deleteRow (obj) {
         this.tableData = this.tableData.filter(o => o.id !== obj.id)
+      },
+      newSheetValidate () {
+        //
+        return {
+          supplier: this.supplier,
+          date: this.sheet_date,
+          is_consigned: this.is_consigned,
+          note: this.note,
+          entries: this.entries
+        }
+      },
+      importSheet () {
+        var newSheet = this.newSheetValidate()
+        if (newSheet) {
+          this.$store.dispatch('addImportSheet', newSheet)
+          this.$store.dispatch('importInventory', this.entries)
+        }
+      },
+      addSupplier () {
+        this.formProps.info = 'Nhà cung cấp'
+        this.formProps.action = 'addSupplier'
+        this.isModalActive = true
       }
     }
   }

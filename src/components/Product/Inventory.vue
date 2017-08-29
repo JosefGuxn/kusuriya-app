@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="content">
-      <b-table :data="tableData" bordered striped>
+      <b-table :data="inventory" bordered striped>
         <template slot="header" scope="props">
           <strong class="is-size-6">
             {{props.column.label}}
@@ -22,11 +22,11 @@
         </template>
         <template scope="props">               
             <b-table-column label="Sản Phẩm">
-              <p>{{props.row.item_name}}</p> 
+              <p>{{props.row.product.product_name}}</p> 
             </b-table-column>
 
             <b-table-column label="Danh Mục" width="130">
-              <p>{{props.row.item_name}}</p> 
+              <p>{{props.row.product.category.value}}</p> 
             </b-table-column>
 
             <b-table-column label="Số Lô" width="100">
@@ -91,27 +91,24 @@
 </template>
 
 <script>
-export default {
-  data () {
-    const tableData = [
-      {
-        item_name: 'Vifticol',
-        stock_number: 'NT41',
-        is_consigned: false,
-        unit_of_ms: 'Lọ',
-        quantity: '10',
-        exp_date: new Date(),
-        unit_price: '10000',
-        wsale_price: '10000',
-        retail_price: '11000'
+  import { mapGetters } from 'vuex'
+  export default {
+    data () {
+      return {
+        formatter: (date) => date.toLocaleDateString('vi-VN')
       }
-    ]
-    return {
-      tableData,
-      formatter: (date) => date.toLocaleDateString('vi-VN')
+    },
+    computed: {
+      ...mapGetters({
+        inventory: 'inventoryArrGetter',
+        categories: 'categoriesArrGetter',
+        chemicals: 'chemicalsArrGetter',
+        classes: 'classesArrGetter',
+        uoms: 'uomsArrGetter',
+        suppliers: 'suppliersArrGetter'
+      })
     }
   }
-}
 </script>
 
 <style scoped>
