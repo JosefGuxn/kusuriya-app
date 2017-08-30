@@ -1,11 +1,11 @@
 <template>
   <b-panel has-custom-template>
     <div class="is-size-3" slot="header">
-      <div class="columns">
-        <strong class="column is-10 has-text-primary">
+      <div class="tile">
+        <strong class="tile is-child has-text-primary">
           Thông tin Kho thuốc
         </strong>
-        <div class="column is-narrow">
+        <div class="tile is-child is-4 has-text-right is-narrow">
           <button class="button is-primary">
             <b-icon icon="print"></b-icon>
             <span>Print</span>
@@ -22,40 +22,35 @@
         </template>
         <template scope="props">               
             <b-table-column label="Sản Phẩm">
-              <p>{{props.row.product.product_name}}</p> 
+              <p>{{props.row.product_name}}</p> 
             </b-table-column>
 
-            <b-table-column label="Danh Mục" width="130">
-              <p>{{props.row.product.category.value}}</p> 
+            <b-table-column label="Danh Mục" width="200">
+              <p>{{props.row.category}}</p> 
             </b-table-column>
 
             <b-table-column label="Số Lô" width="100">
               <p>{{props.row.stock_number}}</p> 
             </b-table-column>
 
-            <b-table-column label="Đơn Vị" width="110">
-              <p>{{props.row.unit_of_ms}}</p> 
-            </b-table-column>
-
             <b-table-column label="Số Lượng" width="130">
-              <b-input type="number" v-model="props.row.quantity"></b-input>
+              {{ props.row.quantity }}
             </b-table-column>
 
             <b-table-column label="Hạn Dùng" width="130">
-              <b-datepicker v-model="props.row.exp_date" 
-              :date-formatter="formatter"></b-datepicker>
+              {{ props.row.exp_date }}
             </b-table-column>
 
             <b-table-column label="Giá Mua" width="120">
-                <b-input type="number" v-model="props.row.unit_price"></b-input>
+                {{ props.row.unit_price }}
             </b-table-column>
             
             <b-table-column label="Giá Bán Sỉ" width="130">
-              <b-input type="number" v-model="props.row.wsale_price"></b-input>
+              {{ props.row.wsale_price }}
             </b-table-column>
 
             <b-table-column label="Giá Bán Lẻ" width="130">
-              <b-input type="number" v-model="props.row.retail_price"></b-input>
+              {{ props.row.retail_price }}
             </b-table-column>
 
             <b-table-column width="100">
@@ -81,7 +76,7 @@
                 <b-icon icon="sentiment_very_dissatisfied" size="is-large">
                 </b-icon>
               </p>
-              <p>Nothing here.</p>
+              <p>Chưa có dữ liệu.</p>
             </div>
           </section>
         </template>
@@ -91,22 +86,17 @@
 </template>
 
 <script>
-  import { mapGetters } from 'vuex'
+  import { db } from '@/firebase'
   export default {
     data () {
       return {
         formatter: (date) => date.toLocaleDateString('vi-VN')
       }
     },
+    firebase: {
+      inventory: db.ref('inventory')
+    },
     computed: {
-      ...mapGetters({
-        inventory: 'inventoryArrGetter',
-        categories: 'categoriesArrGetter',
-        chemicals: 'chemicalsArrGetter',
-        classes: 'classesArrGetter',
-        uoms: 'uomsArrGetter',
-        suppliers: 'suppliersArrGetter'
-      })
     }
   }
 </script>
