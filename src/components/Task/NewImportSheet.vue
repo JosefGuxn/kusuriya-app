@@ -269,7 +269,7 @@
         //
         return {
           supplier: this.supplier,
-          date: this.sheet_date,
+          date: this.sheet_date.toString(),
           is_consigned: this.is_consigned,
           note: this.note
         }
@@ -287,7 +287,7 @@
                 class: e.product.class,
                 stock_number: e.stock_number,
                 quantity: parseInt(e.quantity),
-                exp_date: e.exp_date,
+                exp_date: e.exp_date.toString(),
                 unit_price: parseInt(e.unit_price),
                 wsale_price: parseInt(e.wsale_price),
                 retail_price: parseInt(e.retail_price)
