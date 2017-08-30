@@ -117,7 +117,7 @@
                 </button>
               </b-field>
             </div>
-            <div class="tile is-child productName">
+            <div class="tile is-child">
               <strong>Tên sản phẩm</strong>
               <b-field :type="productName === '' ? 'is-danger':''">
                 <b-input ref="inputProductName" v-model="productName">
