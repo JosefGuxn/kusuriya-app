@@ -129,7 +129,7 @@
               <b-field grouped>
                 <b-autocomplete v-model="chemicalValue"
                 :data="filteredChemicals" 
-                @select="o => chemical = o.value"
+                @select="o => chemical = o"
                 expanded keep-first>
                 </b-autocomplete>
                 <button class="button" @click="addChemical">
@@ -267,7 +267,7 @@ export default {
       var newProduct = {
         category: this.category || this.categories[0].value,
         product_name: this.productName.charAt(0).toUpperCase() + this.productName.slice(1),
-        chemical: this.chemical || '',
+        chemical: this.chemical || this.chemical.value,
         class: this.dClass || this.classes[13],
         stock_number: this.stockNumber || '',
         uom_wsale: this.uomWSale || this.uoms[0].value,
