@@ -6,6 +6,8 @@ import NewImportSheet from '@/components/Task/NewImportSheet'
 import Inventory from '@/components/Product/Inventory'
 import ProductList from '@/components/Product/ProductList'
 
+import Helper from '@/components/DbHelper'
+
 Vue.use(Router)
 
 export default new Router({
@@ -32,6 +34,10 @@ export default new Router({
     {
       path: '/drugsmanage',
       component: Inventory
+    },
+    {
+      path: '/dbhelper',
+      component: Helper
     },
     {
       path: '*',

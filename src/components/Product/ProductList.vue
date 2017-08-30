@@ -20,7 +20,7 @@
             </div>
           </div>
           <div class="content">
-            <b-table :data="tableData" per-page="10" pagination-simple bordered striped paginated>
+            <b-table :data="products" per-page="5" pagination-simple bordered striped paginated>
               <template slot="header" scope="props">
                 <strong class="is-size-6">
                   {{props.column.label}}
@@ -28,59 +28,35 @@
               </template>
               <template scope="props">
                 <b-table-column label="Danh Mục" width="160">
-                  <b-select :placeholder="props.row.category.value" 
-                  v-model="props.row.category" expanded>
-                    <option :value="category"
-                    v-for="category in categories" :key="category.key">
-                      {{ category.value }}
-                    </option>
-                  </b-select>
+                   {{ props.row.category }}                 
                 </b-table-column>
 
                 <b-table-column label="Sản Phẩm">
-                  <b-input v-model="props.row.product_name"></b-input>
+                  {{ props.row.product_name }}
                 </b-table-column>
 
-                <b-table-column label="Hoạt Chất" width="130">
-                  <b-input v-model="props.row.chemical.value"></b-input>
+                <b-table-column label="Hoạt Chất" width="180">
+                  {{ props.row.chemical }}
                 </b-table-column>
 
                 <b-table-column label="Nhóm Dược" width="180">
-                  <b-select :placeholder="props.row.class.value" 
-                  v-model="props.row.class" expanded>
-                    <option :value="dclass"
-                    v-for="dclass in classes" :key="dclass.key">
-                      {{ dclass.value }}
-                    </option>
-                  </b-select>
+                  {{ props.row.class }}
                 </b-table-column>
 
-                <b-table-column label="Số Lô" width="120">
-                  <b-input v-model="props.row.stock_number"></b-input>
+                <b-table-column label="Số Lô" width="100">
+                  {{ props.row.stock_number }}
                 </b-table-column>
 
-                <b-table-column label="ĐVT Sỉ" width="110">
-                  <b-select :placeholder="props.row.uom_wsale.value" 
-                  v-model="props.row.uom_wsale" expanded>
-                    <option :value="uom"
-                    v-for="uom in uoms" :key="uom.key">
-                      {{ uom.value }}
-                    </option>
-                  </b-select>
+                <b-table-column label="ĐVT Sỉ" width="100">
+                  {{ props.row.uom_wsale }}
                 </b-table-column>
 
-                <b-table-column label="ĐVT Lẻ" width="110">
-                  <b-select :placeholder="props.row.uom_retail.value" 
-                  v-model="props.row.uom_retail" expanded>
-                    <option :value="uom"
-                    v-for="uom in uoms" :key="uom.key">
-                      {{ uom.value }}
-                    </option>
-                  </b-select>
+                <b-table-column label="ĐVT Lẻ" width="100">
+                  {{ props.row.uom_retail }}
                 </b-table-column>
 
-                <b-table-column label="Đv Bán Sỉ/Đv Bán Lẻ" width="140">
-                  <b-input type="number" v-model="props.row.uom_rate"></b-input>
+                <b-table-column label="Đv Bán Sỉ/Đv Bán Lẻ" width="130">
+                  {{ props.row.uom_rate }}
                 </b-table-column>
 
                 <b-table-column width="100">
@@ -106,7 +82,7 @@
                       <b-icon icon="sentiment_very_dissatisfied" size="is-large">
                       </b-icon>
                     </p>
-                    <p>Nothing here.</p>
+                    <p>Không có dữ liệu.</p>
                   </div>
                 </section>
               </template>
@@ -131,7 +107,7 @@
               <strong>Danh mục</strong>
               <b-field grouped>
                 <b-select placeholder="Chọn danh mục" v-model="category" expanded>
-                  <option :value="category"
+                  <option :value="category.value"
                   v-for="category in categories" :key="category.key">
                     {{ category.value }}
                   </option>
@@ -153,7 +129,7 @@
               <b-field grouped>
                 <b-autocomplete v-model="chemicalValue"
                 :data="filteredChemicals" 
-                @select="o => chemical = o"
+                @select="o => chemical = o.value"
                 expanded keep-first>
                 </b-autocomplete>
                 <button class="button" @click="addChemical">
@@ -165,7 +141,7 @@
               <strong>Nhóm dược</strong>
               <b-field grouped>
                 <b-select placeholder="Chọn nhóm dược" v-model="dClass" expanded>
-                  <option :value="dclass"
+                  <option :value="dclass.value"
                   v-for="dclass in classes" :key="dclass.key">
                     {{ dclass.value }}
                   </option>
@@ -183,7 +159,7 @@
               <strong>Đơn vị bán Sỉ</strong>
               <b-field grouped>
                 <b-select placeholder="Chọn đơn vị" v-model="uomWSale" expanded>
-                  <option :value="u"
+                  <option :value="u.value"
                   v-for="u in uoms" :key="u.key">
                     {{ u.value }}
                   </option>
@@ -197,7 +173,7 @@
               <strong>Đơn vị bán Lẻ</strong>
               <b-field grouped>
                 <b-select placeholder="Chọn đơn vị" v-model="uomRetail" expanded>
-                  <option :value="u"
+                  <option :value="u.value"
                   v-for="u in uoms" :key="u.key">
                     {{ u.value }}
                   </option>
@@ -232,6 +208,7 @@
 <script>
 import ModalForm from '@/components/Modal/ModalForm'
 import { mapGetters } from 'vuex'
+import {db} from '@/firebase'
 
 export default {
   components: {
@@ -259,13 +236,16 @@ export default {
       inputProductNameType: ''
     }
   },
+  firebase: {
+    products: db.ref('products'),
+    categories: db.ref('categories'),
+    classes: db.ref('classes'),
+    chemicals: db.ref('chemicals'),
+    uoms: db.ref('uoms')
+  },
   computed: {
     ...mapGetters({
-      tableData: 'productsArrGetter',
-      categories: 'categoriesArrGetter',
-      chemicals: 'chemicalsArrGetter',
-      classes: 'classesArrGetter',
-      uoms: 'uomsArrGetter'
+      tableData: 'productsArrGetter'
     }),
     filteredChemicals () {
       return this.chemicals.filter((option) => {
@@ -285,16 +265,22 @@ export default {
     },
     addProduct () {
       var newProduct = {
-        category: this.category || this.categories[0],
+        category: this.category || this.categories[0].value,
         product_name: this.productName.charAt(0).toUpperCase() + this.productName.slice(1),
         chemical: this.chemical || '',
         class: this.dClass || this.classes[13],
         stock_number: this.stockNumber || '',
-        uom_wsale: this.uomWSale || this.uoms[0],
-        uom_retail: this.uomRetail || this.uoms[0],
-        uom_rate: this.uomRate
+        uom_wsale: this.uomWSale || this.uoms[0].value,
+        uom_retail: this.uomRetail || this.uoms[0].value,
+        uom_rate: this.uomRate,
+        last_update: Date.now()
       }
-      this.$store.dispatch('addProduct', newProduct)
+      this.$firebaseRefs.products.push(newProduct).then(() => {
+        this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Sản phẩm thành công.' })
+      }).catch(error => {
+        this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+        console.log(error)
+      })
     },
     resetForm () {
       // this.category = null
@@ -357,7 +343,12 @@ export default {
       })
     },
     removeProduct (product) {
-      this.$store.dispatch('removeProduct', product)
+      this.$firebaseRefs.products.child(product['.key']).remove().then(() => {
+        this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Xóa Sản phẩm thành công.' })
+      }).catch(error => {
+        this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+        console.log(error)
+      })
     },
     test () {
       console.log(this.tableData[0].product_name)

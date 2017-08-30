@@ -79,6 +79,10 @@
                 Thiết lập
               </a>
               <hr class="navbar-divider">
+              <router-link class="navbar-item " to="/dbhelper">
+                HELP!!
+              </router-link>
+              <hr class="navbar-divider">
               <a class="navbar-item ">
                 <span class="icon">
                   <b-icon icon="sign-out"></b-icon>
