@@ -1,151 +1,177 @@
 <template>
-  <div class="container is-fluid">
-    <b-panel has-custom-template>
-      <div class="is-size-3 tile" slot="header">
-        <strong class="tile is-child has-text-primary">
-          Phiếu nhập kho
-        </strong>
-        <div class="tile is-child is-4 has-text-right">         
-          <button class="button is-primary"
-          @click="importSheet">
-            <b-icon icon="floppy-o"></b-icon>
-            <span>Lưu</span>
-          </button>
-          <button class="button is-primary"
-          >
-            <span>Lưu & Nhập mới</span>
-          </button>
+  <div class="columns">
+    <div class="column">
+      <b-panel has-custom-template>
+        <div class="is-size-3 tile" slot="header">
+          <strong class="tile is-child has-text-primary">
+            Phiếu nhập kho
+          </strong>
+          <div class="tile is-child is-4 has-text-right">
+            <button class="button is-primary" @click="importSheetAndClose">
+              <b-icon icon="floppy-o"></b-icon>
+              <span>Lưu</span>
+            </button>
+            <button class="button is-primary" @click="importSheetAndReload">
+              <span>Lưu & Tạo mới mới</span>
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="panel-block">        
-        <div class="container columns">
-          <strong class="column is-3 has-text-right is-size-5">Nhà cung cấp</strong>
-          <div class="column is-6">
-            <b-field grouped>
-              <div class="control is-expanded">
-                <b-select placeholder="Chọn nhà cung cấp" 
-                  v-model="supplier" expanded>
-                  <option :value="suppliers"
-                  v-for="supp in suppliers" :key="supp.key">
-                    {{ supp.value }}
+        <div class="panel-block">
+          <div class="tile">
+            <strong class="tile is-child is-3 is-size-5">Nhà cung cấp</strong>
+            <div class="tile is-child is-6">
+              <b-field grouped>
+                <b-select placeholder="Chọn nhà cung cấp" v-model="supplier" expanded>
+                  <option :value="supplier.value" v-for="supplier in suppliers" :key="supplier['.key']">
+                    {{ supplier.value }}
                   </option>
                 </b-select>
-              </div>
-              <div class="control">
-                <button class="button is-warning has-text-white" @click="addSupplier">
+                <button class="button" @click="addSupplier">
                   <b-icon icon="plus"></b-icon>
                 </button>
-              </div>
-            </b-field>
+              </b-field>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="panel-block">        
-        <div class="container columns">
-          <strong class="column is-3 has-text-right is-size-5">Ngày lập</strong>
-          <div class="column is-6">
-            <b-field>
-              <div class="control">
-                <b-datepicker v-model="sheet_date" :date-formatter="formatter">
-                </b-datepicker>
-              </div>
-            </b-field>
+        <div class="panel-block">
+          <div class="tile">
+            <strong class="tile is-child is-3 is-size-5">Ngày lập</strong>
+            <div class="tile is-child is-3">
+              <b-field>
+                <div class="control">
+                  <b-datepicker v-model="sheet_date" :date-formatter="formatter">
+                  </b-datepicker>
+                </div>
+              </b-field>
+            </div>
           </div>
         </div>
-      </div>     
-      <div class="panel-block">        
-        <div class="container columns">
-          <strong class="column is-3 has-text-right is-size-5">Ký gửi</strong>
-          <div class="column is-6">
-            <b-field>
-              <div class="control is-expanded">
-                <b-checkbox v-model="is_consigned"></b-checkbox>
-              </div>
-            </b-field>
+        <div class="panel-block">
+          <div class="tile">
+            <strong class="tile is-child is-3 is-size-5">Ký gửi</strong>
+            <div class="tile is-child is-3">
+              <b-field>
+                <div class="control">
+                  <b-checkbox v-model="is_consigned"></b-checkbox>
+                </div>
+              </b-field>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="panel-block">        
-        <div class="container columns">
-          <strong class="column is-3 has-text-right is-size-5">Ghi chú</strong>
-          <div class="column is-6">
-            <b-field>
-              <div class="control">
-                <b-input v-model="note" type="textarea"></b-input>
-              </div>            
-            </b-field>
+        <div class="panel-block">
+          <div class="tile">
+            <strong class="tile is-child is-3 is-size-5">Ghi chú</strong>
+            <div class="tile is-child is-6">
+              <b-field>
+                <div class="control">
+                  <b-input v-model="note" type="textarea"></b-input>
+                </div>
+              </b-field>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="content" style="margin-top: 20px">
-        <b-table :data="entries" narrowed bordered>
-          <template slot="header" scope="props">
-            <strong class="is-size-5">
-              {{props.column.label}}
-            </strong>
-          </template>
-          <template scope="props">               
-            <b-table-column label="Sản Phẩm">
-              <b-select
-                  v-model="props.row.product" expanded>
-                <option :value="product"
-                v-for="product in products" :key="product.key">
-                  {{ product.product_name }}
-                </option>
-              </b-select>
-            </b-table-column>
+        <div class="content" style="margin-top: 20px">
+          <b-table :data="entries" narrowed bordered>
+            <template slot="header" scope="props">
+              <strong class="is-size-5">
+                {{ props.column.label }}
+              </strong>
+            </template>
+            <template scope="props">
+              <b-table-column label="Sản Phẩm">
+                {{ props.row.product.product_name }}
+              </b-table-column>
 
-            <b-table-column label="Số Lô" width="110">
-              <b-input v-model="props.row.stock_number"></b-input>  
-            </b-table-column>
+              <b-table-column label="Số Lô" width="110">
+                {{ props.row.stock_number }}
+              </b-table-column>
 
-            <b-table-column label="Đơn Vị" width="110">
-              <b-input v-model="props.row.unit_of_ms">{{props.row.product.uom_wsale}}</b-input>
-            </b-table-column>
+              <b-table-column label="Số Lượng" width="140">
+                {{ props.row.quantity }}
+              </b-table-column>
 
-            <b-table-column label="Số Lượng" width="140">
-              <b-input type="number" v-model="props.row.quantity"></b-input>
-            </b-table-column>
+              <b-table-column label="Hạn Dùng" width="140">
+                {{ props.row.exp_date.toLocaleDateString('vi-VN') }}
+              </b-table-column>
 
-            <b-table-column label="Hạn Dùng" width="140">
-              <b-datepicker v-model="props.row.exp_date" 
-              :date-formatter="formatter"></b-datepicker>
-            </b-table-column>
+              <b-table-column label="Giá Mua" width="120">
+                {{ props.row.unit_price }}
+              </b-table-column>
 
-            <b-table-column label="Giá Mua" width="120">
-                <b-input type="number" v-model="props.row.unit_price"></b-input>
-            </b-table-column>
-            
-            <b-table-column label="Giá Bán Sỉ" width="140">
-              <b-input type="number" v-model="props.row.wsale_price"></b-input>
-            </b-table-column>
+              <b-table-column label="Giá Bán Sỉ" width="140">
+                {{ props.row.wsale_price }}
+              </b-table-column>
 
-            <b-table-column label="Giá Bán Lẻ" width="140">
-              <b-input type="number" v-model="props.row.retail_price"></b-input>
-            </b-table-column>
+              <b-table-column label="Giá Bán Lẻ" width="140">
+                {{ props.row.retail_price }}
+              </b-table-column>
 
-            <b-table-column width="50">
-              <button class="button is-danger" @click="deleteRow(props.row)">
-                <b-icon icon="trash-o"></b-icon>
-              </button>
-            </b-table-column>
-          </template>
-          <template slot="empty">
-            <section class="section">
-              <div class="content has-text-grey has-text-centered">                  
-                <i>Nhấn thêm dữ liệu để tạo dòng mới.</i>
-              </div>
-            </section>
-          </template>
-        </b-table>
-      </div>
-      <div class="panel-block">
-        <button class="button is-success is-fullwidth" @click="addRow">
-          <b-icon icon="plus"></b-icon>
-          <span>Thêm dữ liệu</span>
-        </button>
-      </div>
-    </b-panel>
+              <b-table-column width="50">
+                <button class="button is-danger" @click="deleteRow(props.row)">
+                  <b-icon icon="trash-o"></b-icon>
+                </button>
+              </b-table-column>
+            </template>
+            <template slot="empty">
+              <section class="section">
+                <div class="content has-text-grey has-text-centered">
+                  <i>Chưa có dữ liệu.</i>
+                </div>
+              </section>
+            </template>
+          </b-table>
+        </div>
+      </b-panel>
+    </div>
+    <div class="column is-4">
+      <b-panel has-custom-template>
+        <div class="tile is-size-3" slot="header">
+          <strong class="tile is-child">
+            Thêm sản phẩm
+          </strong>         
+        </div>
+        <div class="panel-block tile is-vertical">         
+          <div class="tile is-child">
+            <strong>Sản phẩm</strong>
+            <b-autocomplete ref="inputProduct" v-model="productValue" 
+              :data="filteredProducts" 
+              @select="o => seletedProduct = o" 
+              field="product_name" expanded keep-first>
+            </b-autocomplete>
+          </div>                   
+          <div class="tile is-child">
+            <strong>Số lô</strong>
+            <b-input v-model="stockNumber"></b-input>
+          </div>    
+          <div class="tile is-child">
+            <strong>Số lượng</strong>
+            <b-input v-model="quantity" type="number"></b-input>
+          </div>
+          <div class="tile is-child">
+            <strong>Hạn dùng</strong>
+            <b-datepicker v-model="expDate" :date-formatter="formatter"></b-datepicker>
+          </div>              
+          <div class="tile is-child">
+            <strong>Giá mua</strong>
+            <b-input v-model="unitPrice" type="number"></b-input>
+          </div>
+          <div class="tile is-child">
+            <strong>Giá bán sỉ</strong>
+            <b-input v-model="wSalePrice" type="number"></b-input>
+          </div>
+          <div class="tile is-child">
+            <strong>Giá bán lẻ</strong>
+            <b-input v-model="retailPrice" type="number"></b-input>
+          </div>
+        </div>
+        <div class="panel-block">
+          <button class="button is-success is-fullwidth" @click="addRow">
+            <b-icon icon="plus"></b-icon>
+            <strong>Thêm</strong>
+          </button>
+        </div>
+      </b-panel>
+    </div>
     <b-modal :active.sync="isModalActive" has-modal-card>
       <modal-form v-bind="formProps"></modal-form>
     </b-modal>
@@ -154,7 +180,7 @@
 
 <script>
   import ModalForm from '@/components/Modal/ModalForm'
-  import { mapGetters } from 'vuex'
+  import { db } from '@/firebase'
   import _ from 'lodash'
   export default {
     components: {
@@ -163,7 +189,6 @@
     data () {
       return {
         entries: [],
-        editable: false,
         formatter: (date) => date.toLocaleDateString('vi-VN'),
         formProps: {
           info: '',
@@ -173,37 +198,72 @@
         supplier: null,
         sheet_date: new Date(),
         is_consigned: false,
-        note: null
+        note: null,
+        productValue: '',
+        seletedProduct: null,
+        quantity: 0,
+        stockNumber: '',
+        expDate: new Date(),
+        unitPrice: 0,
+        wSalePrice: 0,
+        retailPrice: 0
       }
     },
+    firebase: {
+      products: db.ref('products'),
+      suppliers: db.ref('suppliers'),
+      imports: db.ref('imports'),
+      inventory: db.ref('inventory')
+    },
     computed: {
-      ...mapGetters({
-        products: 'productsArrGetter',
-        categories: 'categoriesArrGetter',
-        chemicals: 'chemicalsArrGetter',
-        classes: 'classesArrGetter',
-        uoms: 'uomsArrGetter',
-        suppliers: 'suppliersArrGetter'
-      })
+      filteredProducts () {
+        return this.products.filter((option) => {
+          return option.product_name
+            .toString()
+            .toLowerCase()
+            .indexOf(this.productValue.toLowerCase()) >= 0
+        })
+      }
     },
     methods: {
-      addRow (obj) {
-        this.entries.push(
-          {
+      resetForm () {
+        this.productValue = ''
+        this.seletedProduct = null
+        this.stockNumber = null
+        this.quantity = 0
+        this.expDate = new Date()
+        this.unitPrice = 0
+        this.wSalePrice = 0
+        this.retailPrice = 0
+      },
+      newRowVadilate () {
+        if (this.seletedProduct) {
+          return {
             id: _.random(1111, 9999),
-            product: {},
-            stock_number: '',
-            unit_of_ms: '',
-            quantity: 0,
-            exp_date: new Date(),
-            unit_price: '',
-            wsale_price: '',
-            retail_price: ''
+            product: this.seletedProduct,
+            stock_number: this.stockNumber,
+            quantity: this.quantity,
+            exp_date: this.expDate,
+            unit_price: this.unitPrice,
+            wsale_price: this.wSalePrice,
+            retail_price: this.retailPrice
           }
-        )
+        }
+        return null
+      },
+      addRow () {
+        var newRow = this.newRowVadilate()
+        if (newRow) {
+          this.entries.push(newRow)
+          this.resetForm()
+          this.$refs.inputProduct.focus()
+          window.scrollTo(0, 0)
+        } else {
+          this.$store.dispatch('pushNotif', { message: 'Chưa chọn Sản phẩm.', type: 'is-warning' })
+        }
       },
       deleteRow (obj) {
-        this.tableData = this.tableData.filter(o => o.id !== obj.id)
+        this.entries = this.entries.filter(o => o.id !== obj.id)
       },
       newSheetValidate () {
         //
@@ -211,16 +271,60 @@
           supplier: this.supplier,
           date: this.sheet_date,
           is_consigned: this.is_consigned,
-          note: this.note,
-          entries: this.entries
+          note: this.note
         }
       },
       importSheet () {
         var newSheet = this.newSheetValidate()
-        if (newSheet) {
-          this.$store.dispatch('addImportSheet', newSheet)
-          this.$store.dispatch('importInventory', this.entries)
-        }
+        new Promise((resolve, reject) => {
+          if (newSheet) {
+            this.$firebaseRefs.imports.push(newSheet)
+            var tmp = this.imports[this.imports.length - 1]
+            this.entries.forEach((e) => {
+              var update = {
+                product_name: e.product.product_name,
+                category: e.product.category,
+                class: e.product.class,
+                stock_number: e.stock_number,
+                quantity: parseInt(e.quantity),
+                exp_date: e.exp_date,
+                unit_price: parseInt(e.unit_price),
+                wsale_price: parseInt(e.wsale_price),
+                retail_price: parseInt(e.retail_price)
+              }
+              this.$firebaseRefs.imports.child(tmp['.key'])
+                .child('entries').child(e.product['.key']).set(update)
+
+              var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
+
+              if (ind) {
+                update.quantity += parseInt(ind.quantity)
+              }
+              this.$firebaseRefs.inventory.child(e.product['.key']).set(update)
+            })
+            resolve()
+          } else {
+            reject()
+          }
+        }).then(() => {
+          this.$store.dispatch('pushNotif', { message: 'Cập nhật Phiếu nhập thành công.', type: 'is-success' })
+        }).catch(() => {
+          this.$store.dispatch('pushNotif', { message: 'Cập nhật thất bại.', type: 'is-danger' })
+        })
+      },
+      importSheetAndClose () {
+        this.importSheet()
+        this.$router.push('/dashboard')
+      },
+      importSheetAndReload () {
+        this.importSheet()
+        this.resetForm()
+        this.supplier = null
+        this.sheet_date = new Date()
+        this.is_consigned = false
+        this.note = null
+        this.entries = []
+        window.scrollTo(0, 0)
       },
       addSupplier () {
         this.formProps.info = 'Nhà cung cấp'
