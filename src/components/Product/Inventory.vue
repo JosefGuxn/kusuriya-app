@@ -38,7 +38,7 @@
             </b-table-column>
 
             <b-table-column label="Hạn Dùng" width="130">
-              {{ props.row.exp_date }}
+              {{ moment(props.row.exp_date) }}
             </b-table-column>
 
             <b-table-column label="Giá Mua" width="120">
@@ -87,6 +87,7 @@
 
 <script>
   import { db } from '@/firebase'
+  import moment from 'moment'
   export default {
     data () {
       return {
@@ -97,6 +98,11 @@
       inventory: db.ref('inventory')
     },
     computed: {
+    },
+    methods: {
+      moment (time) {
+        return moment(time).format('DD/MM/YYYY')
+      }
     }
   }
 </script>
