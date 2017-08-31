@@ -87,7 +87,7 @@
               </b-table-column>
 
               <b-table-column label="Số Lượng" width="140">
-                {{ props.row.quantity }}
+                {{ toNumber(props.row.quantity) }}
               </b-table-column>
 
               <b-table-column label="Hạn Dùng" width="140">
@@ -95,15 +95,15 @@
               </b-table-column>
 
               <b-table-column label="Giá Mua" width="120">
-                {{ props.row.unit_price }}
+                {{ toCurrency(props.row.unit_price) }}
               </b-table-column>
 
               <b-table-column label="Giá Bán Sỉ" width="140">
-                {{ props.row.wsale_price }}
+                {{ toCurrency(props.row.wsale_price) }}
               </b-table-column>
 
               <b-table-column label="Giá Bán Lẻ" width="140">
-                {{ props.row.retail_price }}
+                {{ toCurrency(props.row.retail_price) }}
               </b-table-column>
 
               <b-table-column width="50">
@@ -340,6 +340,12 @@
         this.formProps.info = 'Nhà cung cấp'
         this.formProps.action = 'addSupplier'
         this.isModalActive = true
+      },
+      toCurrency (number) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
+      },
+      toNumber (number) {
+        return new Intl.NumberFormat('vi-VN').format(number)
       }
     }
   }
