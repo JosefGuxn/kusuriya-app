@@ -91,7 +91,7 @@
               </b-table-column>
 
               <b-table-column label="Hạn Dùng" width="140">
-                {{ props.row.exp_date.toLocaleDateString('vi-VN') }}
+                {{ moment(props.row.exp_date) }}
               </b-table-column>
 
               <b-table-column label="Giá Mua" width="120">
@@ -148,8 +148,14 @@
             <b-input v-model="quantity" type="number"></b-input>
           </div>
           <div class="tile is-child">
-            <strong>Hạn dùng</strong>
-            <b-datepicker v-model="expDate" :date-formatter="formatter"></b-datepicker>
+            <div class="tile is-vertical">
+              <div class="tile">
+                <strong>Hạn dùng</strong>
+              </div>
+              <div class="tile">
+                <DatePicker v-model="expDate" type="date" size="large" format="dd/MM/yyyy" placement="top-start" ></DatePicker>
+              </div>
+            </div>
           </div>              
           <div class="tile is-child">
             <strong>Giá mua</strong>
@@ -181,6 +187,7 @@
 <script>
   import ModalForm from '@/components/Modal/ModalForm'
   import { db } from '@/firebase'
+  import moment from 'moment'
   import _ from 'lodash'
   export default {
     components: {
@@ -226,6 +233,9 @@
       }
     },
     methods: {
+      moment (time) {
+        return moment(time).format('DD/MM/YYYY')
+      },
       resetForm () {
         this.productValue = ''
         this.seletedProduct = null
