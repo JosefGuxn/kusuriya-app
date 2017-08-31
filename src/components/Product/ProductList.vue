@@ -10,11 +10,17 @@
             <div class="tile is-parent has-text-right">
               <b-field class="tile is-child">
                 <b-input v-model="searchText"
-                  placeholder="Nhấn Enter để tìm trong bảng..." expanded>
-                </b-input>                
+                  placeholder="Enter để tìm theo Tên và Hoạt chất..." expanded
+                  @keydown.enter.native="searchData">
+                </b-input>     
+                <button class="button" @click="clearSearch">
+                  <b-icon icon="close">                      
+                  </b-icon>
+                </button>           
               </b-field>      
               <div class="tile is-child is-5">                
-                <button class="button is-primary" @click="isAddMode = true">
+                <button class="button is-primary" 
+                  @click="isAddMode = true, isEditMode = false, resetForm()">
                   <b-icon icon="plus"></b-icon>
                   <span>Thêm Sản Phẩm</span>
                 </button>
@@ -27,11 +33,11 @@
             </div>
           </div>          
           <div class="content">
-            <b-table :data="products" per-page="10" pagination-simple bordered striped paginated detailed narrowed>
-              <template slot="header" scope="props">
-                <strong class="is-size-5">
-                  {{props.column.label}}
-                </strong>
+            <b-table :data="dataTable" per-page="10" pagination-simple striped paginated detailed narrowed>
+              <template slot="header" scope="props">              
+                <b-tooltip position="is-bottom" type="is-dark" :active="!!props.column.meta" :label="props.column.meta" dashed>
+                  {{ props.column.label }}
+                </b-tooltip>
               </template>
               <template scope="props">
                 <b-table-column field="category" label="Danh Mục" width="200" sortable>
@@ -44,19 +50,19 @@
                   </strong>
                 </b-table-column>
 
-                <b-table-column label="Số Lô" width="150" centered>
+                <b-table-column meta="Số Lô"  label="Số Lô" width="150" centered>
                   {{ props.row.stock_number }}
                 </b-table-column>
 
-                <b-table-column label="ĐV Sỉ" width="110" centered>
+                <b-table-column meta="Đơn Vị Bán Sỉ"  label="ĐvBS" width="110" centered>
                   {{ props.row.uom_wsale }}
                 </b-table-column>
 
-                <b-table-column label="ĐV Lẻ" width="110" centered>
+                <b-table-column meta="Đơn Vị Bán Lẻ"  label="ĐvBL" width="110" centered>
                   {{ props.row.uom_retail }}
                 </b-table-column>
 
-                <b-table-column label="Đv Bán Sỉ/Đv Bán Lẻ" width="160" centered>
+                <b-table-column meta="Tỉ Lệ Đv Bán Sỉ/Đv Bán Lẻ"  label="ĐvBS/ĐvBL" width="140" centered>
                   {{ props.row.uom_rate }}
                 </b-table-column>
 
@@ -83,7 +89,7 @@
                       <b-icon icon="sentiment_very_dissatisfied" size="is-large">
                       </b-icon>
                     </p>
-                    <p>Không có dữ liệu.</p>
+                    <p>Chưa có có dữ liệu.</p>
                   </div>
                 </section>
               </template>
@@ -110,14 +116,17 @@
           </div>
         </b-panel>
       </div>
-      <div v-if="isAddMode" class="column is-4">
+      <div v-if="isAddMode || isEditMode" class="column is-4">
         <b-panel has-custom-template>
           <div class="tile is-size-3" slot="header">
-            <strong class="tile is-child">
-              Cập nhật Sản phẩm
+            <strong v-if="isAddMode" class="tile is-child">
+              Thêm Sản phẩm
+            </strong>
+            <strong v-if="isEditMode" class="tile is-child">
+              Sửa Sản phẩm
             </strong>
             <div class="tile is-child is-1 has-text-right">
-              <button class="button" @click="isAddMode = false">
+              <button class="button" @click="isAddMode = false, isEditMode = false">
                 <b-icon icon="times"></b-icon>
               </button>
             </div>
@@ -206,7 +215,7 @@
             </div>
           </div>
           <div class="panel-block">
-            <b-field grouped>
+            <b-field v-if="isAddMode" grouped>
               <div class="control">
                 <button class="button is-success is-fullwidth" @click="addProductAndClose">Thêm</button>
               </div>
@@ -214,6 +223,11 @@
                 <button class="button is-info is-fullwidth"
                 @click="addProductAndReset">Thêm & Làm mới</button>
               </div>          
+            </b-field>
+            <b-field v-if="isEditMode">
+              <div class="control">
+                <button class="button is-dark" @click="editProduct">Sửa</button>
+              </div>                  
             </b-field>
           </div>
         </b-panel>
@@ -227,8 +241,8 @@
 
 <script>
 import ModalForm from '@/components/Modal/ModalForm'
-import { mapGetters } from 'vuex'
 import {db} from '@/firebase'
+import _ from 'lodash'
 
 export default {
   components: {
@@ -238,7 +252,7 @@ export default {
     return {
       formatter: (date) => date.toLocaleDateString('vi-VN'),
       isAddMode: false,
-      isSearchMode: false,
+      isEditMode: false,
       category: null,
       productName: '',
       chemical: null,
@@ -254,7 +268,9 @@ export default {
       },
       modalValue: '',
       chemicalValue: '',
-      inputProductNameType: ''
+      searchText: '',
+      dataTable: [{}],
+      currentEditProduct: null
     }
   },
   firebase: {
@@ -265,9 +281,6 @@ export default {
     uoms: db.ref('uoms')
   },
   computed: {
-    ...mapGetters({
-      tableData: 'productsArrGetter'
-    }),
     filteredChemicals () {
       return this.chemicals.filter((option) => {
         return option.value
@@ -312,7 +325,6 @@ export default {
       this.uomWSale = null
       this.uomRetail = null
       this.uomRate = 0
-      this.inputProductNameType = ''
     },
     addProductAndClose () {
       if (!this.newProductValadate()) {
@@ -366,14 +378,74 @@ export default {
     removeProduct (product) {
       this.$firebaseRefs.products.child(product['.key']).remove().then(() => {
         this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Xóa Sản phẩm thành công.' })
+        this.dataTable = this.products
       }).catch(error => {
         this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
         console.log(error)
       })
     },
+    searchData () {
+      this.dataTable = this.products.filter((option) => {
+        return (option.product_name
+          .toString()
+          .toLowerCase()
+          .indexOf(this.searchText.toLowerCase()) >= 0) ||
+          (option.chemical
+            .toString()
+            .toLowerCase()
+            .indexOf(this.searchText.toLowerCase()) >= 0)
+      })
+    },
+    clearSearch () {
+      this.searchText = ''
+      this.dataTable = this.products
+    },
+    editRow (obj) {
+      this.isAddMode = false
+      this.isEditMode = true
+      this.resetForm()
+      this.category = obj.category
+      this.productName = obj.product_name
+      this.chemicalValue = obj.chemical
+      this.chemical = _.find(this.chemicals, { value: obj.chemical })
+      this.dClass = obj.class
+      this.stockNumber = obj.stock_number
+      this.uomWSale = obj.uom_wsale
+      this.uomRetail = obj.uom_retail
+      this.uomRate = obj.uom_rate
+      this.currentEditProduct = obj
+    },
+    editProduct () {
+      if (this.currentEditProduct) {
+        var update = {
+          category: this.category || this.categories[0].value,
+          product_name: this.productName.charAt(0).toUpperCase() + this.productName.slice(1),
+          chemical: this.chemical ? this.chemical.value : '',
+          class: this.dClass || this.classes[13],
+          stock_number: this.stockNumber || '',
+          uom_wsale: this.uomWSale || this.uoms[0].value,
+          uom_retail: this.uomRetail || this.uoms[0].value,
+          uom_rate: this.uomRate,
+          last_update: Date.now()
+        }
+        this.$firebaseRefs.products
+          .child(this.currentEditProduct['.key']).set(update).then(() => {
+            this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Sửa Sản phẩm thành công.' })
+            this.isEditMode = false
+            this.resetForm()
+            this.dataTable = this.products
+          }).catch(error => {
+            this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+            console.log(error)
+          })
+      }
+    },
     test () {
       console.log(this.tableData[0].product_name)
     }
+  },
+  created () {
+    this.dataTable = this.products
   }
 }
 </script>
