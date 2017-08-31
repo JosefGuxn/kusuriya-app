@@ -267,7 +267,7 @@ export default {
       var newProduct = {
         category: this.category || this.categories[0].value,
         product_name: this.productName.charAt(0).toUpperCase() + this.productName.slice(1),
-        chemical: this.chemical || this.chemical.value,
+        chemical: this.chemical ? this.chemical.value : '',
         class: this.dClass || this.classes[13],
         stock_number: this.stockNumber || '',
         uom_wsale: this.uomWSale || this.uoms[0].value,
