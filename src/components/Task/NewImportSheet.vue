@@ -152,8 +152,10 @@
               <div class="tile">
                 <strong>Hạn dùng</strong>
               </div>
-              <div class="tile">
-                <DatePicker v-model="expDate" type="date" size="large" format="dd/MM/yyyy" placement="top-start" ></DatePicker>
+              <div class="tile is-child">
+                <DatePicker v-model="expDate" type="date" size="large" 
+                format="dd/MM/yyyy" placement="top-start" 
+                :clearable="false"></DatePicker>
               </div>
             </div>
           </div>              
