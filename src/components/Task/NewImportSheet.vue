@@ -133,11 +133,13 @@
         <div class="panel-block tile is-vertical">         
           <div class="tile is-child">
             <strong>Sản phẩm</strong>
-            <b-autocomplete ref="inputProduct" v-model="productValue" 
+            <b-field :type="seletedProduct === null ? 'is-danger':''">
+              <b-autocomplete ref="inputProduct" v-model="productValue" 
               :data="filteredProducts" 
               @select="o => seletedProduct = o" 
               field="product_name" expanded keep-first>
-            </b-autocomplete>
+              </b-autocomplete>
+            </b-field>
           </div>                   
           <div class="tile is-child">
             <strong>Số lô</strong>

@@ -3,59 +3,60 @@
     <div class="columns">
       <div class="column">
         <b-panel has-custom-template>
-          <div class="is-size-3 tile" slot="header">
-            <strong class="tile is-child has-text-primary">
+          <div class="is-size-3 tile is-ancestor" slot="header">
+            <strong class="tile is-parent is-5 has-text-primary">
               Thông tin Sản phẩm
             </strong>
-            <div class="tile is-child is-4 has-text-right">
-              <button class="button is-primary" @click="isAddMode = true">
-                <b-icon icon="plus"></b-icon>
-                <span>Thêm Sản Phẩm</span>
-              </button>
-              <button class="button is-primary"
-              @click="test">
-                <b-icon icon="print"></b-icon>
-                <span>Print</span>
-              </button>
+            <div class="tile is-parent has-text-right">
+              <b-field class="tile is-child">
+                <b-input v-model="searchText"
+                  placeholder="Nhấn Enter để tìm trong bảng..." expanded>
+                </b-input>                
+              </b-field>      
+              <div class="tile is-child is-5">                
+                <button class="button is-primary" @click="isAddMode = true">
+                  <b-icon icon="plus"></b-icon>
+                  <span>Thêm Sản Phẩm</span>
+                </button>
+                <button class="button is-primary"
+                @click="test">
+                  <b-icon icon="print"></b-icon>
+                  <span>Print</span>
+                </button>
+              </div>
             </div>
-          </div>
+          </div>          
           <div class="content">
-            <b-table :data="products" per-page="5" pagination-simple bordered striped paginated>
+            <b-table :data="products" per-page="10" pagination-simple bordered striped paginated detailed narrowed>
               <template slot="header" scope="props">
-                <strong class="is-size-6">
+                <strong class="is-size-5">
                   {{props.column.label}}
                 </strong>
               </template>
               <template scope="props">
-                <b-table-column label="Danh Mục" width="160">
+                <b-table-column field="category" label="Danh Mục" width="200" sortable>
                    {{ props.row.category }}                 
                 </b-table-column>
 
-                <b-table-column label="Sản Phẩm">
-                  {{ props.row.product_name }}
+                <b-table-column field="product_name" label="Sản Phẩm" sortable>
+                  <strong>
+                    {{ props.row.product_name }}
+                  </strong>
                 </b-table-column>
 
-                <b-table-column label="Hoạt Chất" width="180">
-                  {{ props.row.chemical }}
-                </b-table-column>
-
-                <b-table-column label="Nhóm Dược" width="180">
-                  {{ props.row.class }}
-                </b-table-column>
-
-                <b-table-column label="Số Lô" width="100">
+                <b-table-column label="Số Lô" width="150" centered>
                   {{ props.row.stock_number }}
                 </b-table-column>
 
-                <b-table-column label="ĐVT Sỉ" width="100">
+                <b-table-column label="ĐV Sỉ" width="110" centered>
                   {{ props.row.uom_wsale }}
                 </b-table-column>
 
-                <b-table-column label="ĐVT Lẻ" width="100">
+                <b-table-column label="ĐV Lẻ" width="110" centered>
                   {{ props.row.uom_retail }}
                 </b-table-column>
 
-                <b-table-column label="Đv Bán Sỉ/Đv Bán Lẻ" width="130">
+                <b-table-column label="Đv Bán Sỉ/Đv Bán Lẻ" width="160" centered>
                   {{ props.row.uom_rate }}
                 </b-table-column>
 
@@ -85,6 +86,25 @@
                     <p>Không có dữ liệu.</p>
                   </div>
                 </section>
+              </template>
+
+              <template slot="detail" scope="props">
+                <article class="media">
+                  <div class="media-content">
+                    <div class="content">
+                      <p>
+                        <strong>Nhóm dược</strong>
+                        <br>                      
+                        {{ props.row.class }}   
+                      </p>              
+                      <p>
+                        <strong>Hoạt chất</strong>
+                        <br>                      
+                        {{ props.row.chemical }}   
+                      </p>
+                    </div>
+                  </div>
+                </article>
               </template>
             </b-table>
           </div>
@@ -218,6 +238,7 @@ export default {
     return {
       formatter: (date) => date.toLocaleDateString('vi-VN'),
       isAddMode: false,
+      isSearchMode: false,
       category: null,
       productName: '',
       chemical: null,
