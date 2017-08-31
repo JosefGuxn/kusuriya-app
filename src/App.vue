@@ -56,11 +56,12 @@
                 Nhà cung ứng
               </a>
               <a class="navbar-item ">
+                Phiếu nhập/xuất
+              </a>  
+              <hr class="navbar-divider">
+              <a class="navbar-item ">
                 Nhân viên
               </a>
-              <a class="navbar-item ">
-                Hóa đơn
-              </a>              
             </div>
           </div>
 
@@ -80,7 +81,7 @@
               </a>
               <hr class="navbar-divider">
               <router-link class="navbar-item " to="/dbhelper">
-                HELP!!
+                DO NOT PRESS!!
               </router-link>
               <hr class="navbar-divider">
               <a class="navbar-item ">
@@ -112,13 +113,16 @@
   }
 </script>
 
-<style scoped>
+<style>
   .navbar { 
     position: fixed !important; 
     top: 0; 
     left: 0; 
     right: 0; 
     z-index: 10;
+  }
+  .panel-heading {
+    background-color: hsl(0, 0%, 71%);
   }
 </style>
 

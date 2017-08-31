@@ -81,7 +81,7 @@
                 <b-icon icon="sentiment_very_dissatisfied" size="is-large">
                 </b-icon>
               </p>
-              <p>Chưa có dữ liệu.</p>
+              <p>Đang tải dữ liệu.</p>
             </div>
           </section>
         </template>
