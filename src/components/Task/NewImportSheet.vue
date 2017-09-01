@@ -170,205 +170,200 @@
 </template>
 
 <script>
-  import { db } from '@/firebase'
-  import moment from 'moment'
-  import _ from 'lodash'
-  export default {
-    data () {
-      return {
-        entries: [],
-        formProps: {
-          info: '',
-          action: ''
-        },
-        supplier: null,
-        sheet_date: new Date(),
-        note: null,
-        productValue: '',
-        seletedProduct: null,
-        quantity: 0,
-        stockNumber: '',
-        expDate: new Date(),
-        unitPrice: 0,
-        wSalePrice: 0,
-        retailPrice: 0
+import { db } from '@/firebase'
+import moment from 'moment'
+import _ from 'lodash'
+export default {
+  data () {
+    return {
+      entries: [],
+      formProps: {
+        info: '',
+        action: ''
+      },
+      supplier: null,
+      sheet_date: new Date(),
+      note: null,
+      productValue: '',
+      seletedProduct: null,
+      quantity: 0,
+      stockNumber: '',
+      expDate: new Date(),
+      unitPrice: 0,
+      wSalePrice: 0,
+      retailPrice: 0
+    }
+  },
+  firebase: {
+    products: db.ref('products'),
+    suppliers: db.ref('suppliers'),
+    imports: db.ref('imports'),
+    inventory: db.ref('inventory')
+  },
+  computed: {
+    filteredProducts () {
+      return this.products.filter((option) => {
+        return option.product_name
+          .toString()
+          .toLowerCase()
+          .indexOf(this.productValue.toLowerCase()) >= 0
+      })
+    }
+  },
+  methods: {
+    selectProduct (val) {
+      if (val) {
+        this.seletedProduct = val
+        var tmp = _.find(this.inventory, e => e['.key'] === val['.key'])
+        this.wSalePrice = tmp ? tmp.wsale_price : 0
+        this.retailPrice = tmp ? tmp.retail_price : 0
       }
     },
-    firebase: {
-      products: db.ref('products'),
-      suppliers: db.ref('suppliers'),
-      imports: db.ref('imports'),
-      inventory: db.ref('inventory')
+    resetForm () {
+      this.productValue = ''
+      this.seletedProduct = null
+      this.stockNumber = null
+      this.quantity = 0
+      this.expDate = new Date()
+      this.unitPrice = 0
+      this.wSalePrice = 0
+      this.retailPrice = 0
     },
-    computed: {
-      filteredProducts () {
-        return this.products.filter((option) => {
-          return option.product_name
-            .toString()
-            .toLowerCase()
-            .indexOf(this.productValue.toLowerCase()) >= 0
-        })
+    newRowVadilate () {
+      if (this.seletedProduct) {
+        return {
+          id: _.random(1111, 9999),
+          product: this.seletedProduct,
+          stock_number: this.stockNumber,
+          quantity: this.quantity,
+          exp_date: this.expDate,
+          unit_price: this.unitPrice,
+          wsale_price: this.wSalePrice,
+          retail_price: this.retailPrice
+        }
+      }
+      return null
+    },
+    addRow () {
+      var newRow = this.newRowVadilate()
+      if (newRow) {
+        this.entries.push(newRow)
+        this.resetForm()
+        this.$refs.inputProduct.focus()
+        window.scrollTo(0, 0)
+      } else {
+        this.$store.dispatch('pushNotif', { message: 'Chưa chọn Sản phẩm.', type: 'is-warning' })
       }
     },
-    methods: {
-      selectProduct (val) {
-        if (val) {
-          this.seletedProduct = val
-          var tmp = _.find(this.inventory, e => e['.key'] === val['.key'])
-          this.wSalePrice = tmp ? tmp.wsale_price : 0
-          this.retailPrice = tmp ? tmp.retail_price : 0
+    deleteRow (obj) {
+      this.entries = this.entries.filter(o => o.id !== obj.id)
+    },
+    newSheetValidate () {
+      var condition = this.supplier && this.entries.length !== 0
+      if (condition) {
+        return {
+          supplier: this.supplier,
+          date: this.sheet_date.getTime(),
+          note: this.note
         }
-      },
-      resetForm () {
-        this.productValue = ''
-        this.seletedProduct = null
-        this.stockNumber = null
-        this.quantity = 0
-        this.expDate = new Date()
-        this.unitPrice = 0
-        this.wSalePrice = 0
-        this.retailPrice = 0
-      },
-      newRowVadilate () {
-        if (this.seletedProduct) {
-          return {
-            id: _.random(1111, 9999),
-            product: this.seletedProduct,
-            stock_number: this.stockNumber,
-            quantity: this.quantity,
-            exp_date: this.expDate,
-            unit_price: this.unitPrice,
-            wsale_price: this.wSalePrice,
-            retail_price: this.retailPrice
+      }
+    },
+    importSheet () {
+      var newSheet = this.newSheetValidate()
+      if (newSheet) {
+        this.$firebaseRefs.imports.push(newSheet)
+        var tmp = this.imports[this.imports.length - 1]
+        this.entries.forEach((e) => {
+          var update = {
+            product_name: e.product.product_name,
+            stock_number: e.stock_number,
+            quantity: parseInt(e.quantity),
+            exp_date: e.exp_date.getTime(),
+            unit_price: parseInt(e.unit_price),
+            wsale_price: parseInt(e.wsale_price),
+            retail_price: parseInt(e.retail_price)
           }
-        }
-        return null
-      },
-      addRow () {
-        var newRow = this.newRowVadilate()
-        if (newRow) {
-          this.entries.push(newRow)
-          this.resetForm()
-          this.$refs.inputProduct.focus()
-          window.scrollTo(0, 0)
-        } else {
-          this.$store.dispatch('pushNotif', { message: 'Chưa chọn Sản phẩm.', type: 'is-warning' })
-        }
-      },
-      deleteRow (obj) {
-        this.entries = this.entries.filter(o => o.id !== obj.id)
-      },
-      newSheetValidate () {
-        var condition = this.supplier && this.entries.length !== 0
-        if (condition) {
-          return {
-            supplier: this.supplier,
-            date: this.sheet_date.getTime(),
-            note: this.note
-          }
-        }
-      },
-      importSheet () {
-        new Promise((resolve, reject) => {
-          var newSheet = this.newSheetValidate()
-          if (newSheet) {
-            this.$firebaseRefs.imports.push(newSheet)
-            var tmp = this.imports[this.imports.length - 1]
-            this.entries.forEach((e) => {
-              var update = {
-                product_name: e.product.product_name,
-                stock_number: e.stock_number,
-                quantity: parseInt(e.quantity),
-                exp_date: e.exp_date.getTime(),
-                unit_price: parseInt(e.unit_price),
-                wsale_price: parseInt(e.wsale_price),
-                retail_price: parseInt(e.retail_price)
-              }
-              this.$firebaseRefs.imports.child(tmp['.key'])
-                .child('entries').child(e.product['.key']).set(update)
+          this.$firebaseRefs.imports.child(tmp['.key'])
+            .child('entries').child(e.product['.key']).set(update)
 
-              update.category = e.product.category
-              update.chemical = e.product.chemical
-              update.class = e.product.class
-              update.uom_wsale = e.product.uom_wsale
-              update.uom_retail = e.product.uom_retail
+          update.category = e.product.category
+          update.chemical = e.product.chemical
+          update.class = e.product.class
+          update.uom_wsale = e.product.uom_wsale
+          update.uom_retail = e.product.uom_retail
 
-              var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
+          var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
 
-              if (ind) {
-                update.quantity += parseInt(ind.quantity)
-                this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
-                  .set(update.quantity + parseInt(ind.quantity))
-                this.$firebaseRefs.inventory.child(e.product['.key'] + '/exp_date')
-                  .set(update.exp_date)
-                this.$firebaseRefs.inventory.child(e.product['.key'] + '/unit_price')
-                  .set(update.unit_price)
-                this.$firebaseRefs.inventory.child(e.product['.key'] + '/wsale_price')
-                  .set(update.wsale_price)
-                this.$firebaseRefs.inventory.child(e.product['.key'] + '/retail_price')
-                  .set(update.retail_price)
-              } else {
-                this.$firebaseRefs.inventory.child(e.product['.key']).set(update)
-              }
-              this.$firebaseRefs.inventory.child(e.product['.key'] + '/logs')
-                .child(Date.now()).set({
-                  type: 'Import',
-                  quantity: 100
-                })
-            })
-            resolve()
+          if (ind) {
+            update.quantity += parseInt(ind.quantity)
+            this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
+              .set(update.quantity + parseInt(ind.quantity))
+            this.$firebaseRefs.inventory.child(e.product['.key'] + '/exp_date')
+              .set(update.exp_date)
+            this.$firebaseRefs.inventory.child(e.product['.key'] + '/unit_price')
+              .set(update.unit_price)
+            this.$firebaseRefs.inventory.child(e.product['.key'] + '/wsale_price')
+              .set(update.wsale_price)
+            this.$firebaseRefs.inventory.child(e.product['.key'] + '/retail_price')
+              .set(update.retail_price)
           } else {
-            reject()
+            this.$firebaseRefs.inventory.child(e.product['.key']).set(update)
           }
-        }).then(() => {
-          this.$store.dispatch('pushNotif', { message: 'Cập nhật Phiếu nhập thành công.', type: 'is-success' })
-          return true
-        }).catch(() => {
-          this.$store.dispatch('pushNotif', { message: 'Cập nhật thất bại.', type: 'is-danger' })
-          return false
+          this.$firebaseRefs.inventory.child(e.product['.key'] + '/logs')
+            .child(Date.now()).set({
+              type: 'Import',
+              quantity: 100
+            })
         })
-      },
-      importSheetAndClose () {
-        if (this.importSheet()) {
-          this.$router.push('/dashboard')
-        }
-      },
-      importSheetAndReload () {
-        if (this.importSheet()) {
-          this.resetForm()
-          this.supplier = null
-          this.sheet_date = new Date()
-          this.note = null
-          this.entries = []
-          window.scrollTo(0, 0)
-        }
-      },
-      addSupplier () {
-        this.$dialog.prompt({
-          title: `Nhà Cung Cấp Mới`,
-          confirmText: 'OK',
-          onConfirm: (value) => this.$firebaseRefs.suppliers.push({
-            value: value,
-            last_update: Date.now()
-          }).then(() => {
-            this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Nhà cung cấp thành công.' })
-          }).catch(error => {
-            this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
-            console.log(error)
-          })
-        })
-      },
-      moment (time) {
-        return moment(time).format('DD/MM/YYYY')
-      },
-      toCurrency (number) {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
-      },
-      toNumber (number) {
-        return new Intl.NumberFormat('vi-VN').format(number)
+        this.$store.dispatch('pushNotif', { message: 'Cập nhật Phiếu nhập thành công.', type: 'is-success' })
+        return true
+      } else {
+        this.$store.dispatch('pushNotif', { message: 'Cập nhật thất bại.', type: 'is-danger' })
+        return false
       }
+    },
+    importSheetAndClose () {
+      var tmp = this.importSheet()
+      if (tmp) {
+        this.$router.push('/dashboard')
+      }
+    },
+    importSheetAndReload () {
+      if (this.importSheet()) {
+        this.resetForm()
+        this.supplier = null
+        this.sheet_date = new Date()
+        this.note = null
+        this.entries = []
+        window.scrollTo(0, 0)
+      }
+    },
+    addSupplier () {
+      this.$dialog.prompt({
+        title: `Nhà Cung Cấp Mới`,
+        confirmText: 'OK',
+        onConfirm: (value) => this.$firebaseRefs.suppliers.push({
+          value: value,
+          last_update: Date.now()
+        }).then(() => {
+          this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Nhà cung cấp thành công.' })
+        }).catch(error => {
+          this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+          console.log(error)
+        })
+      })
+    },
+    moment (time) {
+      return moment(time).format('DD/MM/YYYY')
+    },
+    toCurrency (number) {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
+    },
+    toNumber (number) {
+      return new Intl.NumberFormat('vi-VN').format(number)
     }
   }
+}
 </script>
 
 <style scoped>
