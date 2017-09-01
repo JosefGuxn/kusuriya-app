@@ -33,7 +33,7 @@
             </div>
           </div>          
           <div class="content">
-            <b-table :data="dataTable" per-page="10" pagination-simple striped paginated detailed narrowed>
+            <b-table :data="dataTable" per-page="10" pagination-simple striped paginated detailed narrowed :loading="dataTable.length === 0" >
               <template slot="header" scope="props">              
                 <b-tooltip position="is-bottom" type="is-dark" :active="!!props.column.meta" :label="props.column.meta" dashed>
                   {{ props.column.label }}
@@ -80,20 +80,7 @@
                     </div>
                   </div>
                 </b-table-column>
-              </template>
-
-              <template slot="empty">
-                <section class="section">
-                  <div class="content has-text-grey has-text-centered">
-                    <p>
-                      <b-icon icon="sentiment_very_dissatisfied" size="is-large">
-                      </b-icon>
-                    </p>
-                    <p>Đang tải dữ liệu.</p>
-                  </div>
-                </section>
-              </template>
-
+              </template>             
               <template slot="detail" scope="props">
                 <article class="media">
                   <div class="media-content">
@@ -211,7 +198,7 @@
             </div>
             <div class="tile is-child">
               <strong>Tỉ lệ Đv bán Sỉ/Đv bán Lẻ</strong>
-              <b-input v-model="uomRate" type="number" value="1"></b-input>
+              <b-input v-model="uomRate" type="number"></b-input>
             </div>
           </div>
           <div class="panel-block">
@@ -269,7 +256,7 @@ export default {
       modalValue: '',
       chemicalValue: '',
       searchText: '',
-      dataTable: [{}],
+      dataTable: [],
       currentEditProduct: null
     }
   },
@@ -320,6 +307,7 @@ export default {
       // this.category = null
       this.productName = ''
       this.chemical = null
+      this.chemicalValue = ''
       this.dClass = null
       this.stockNumber = null
       this.uomWSale = null
