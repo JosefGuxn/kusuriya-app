@@ -26,9 +26,9 @@
               <router-link class="navbar-item" to="/newimportsheet">
                 Nhập kho
               </router-link>
-              <a class="navbar-item ">
+              <router-link class="navbar-item " to="/newexportsheet">
                 Xuất kho
-              </a>
+              </router-link>
               <hr class="navbar-divider">
               <a class="navbar-item ">
                 Thống kê
@@ -43,7 +43,7 @@
               <span>Quản lý</span>
             </a>
             <div class="navbar-dropdown ">
-              <router-link class="navbar-item" to='/drugsmanage'>
+              <router-link class="navbar-item" to='/inventory'>
                 Kho dược
               </router-link>             
               <router-link class="navbar-item" to='/productslist'>
