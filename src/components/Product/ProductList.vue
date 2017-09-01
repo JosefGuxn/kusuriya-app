@@ -204,37 +204,30 @@
           <div class="panel-block">
             <b-field v-if="isAddMode" grouped>
               <div class="control">
-                <button class="button is-success is-fullwidth" @click="addProductAndClose">Thêm</button>
+                <button class="button is-success is-fullwidth" @click="addProductAndClose">Cập nhật</button>
               </div>
               <div class="control">
                 <button class="button is-info is-fullwidth"
-                @click="addProductAndReset">Thêm & Làm mới</button>
+                @click="addProductAndReset">Cập nhật & Tiếp tục</button>
               </div>          
             </b-field>
             <b-field v-if="isEditMode">
               <div class="control">
-                <button class="button is-dark" @click="editProduct">Sửa</button>
+                <button class="button is-dark" @click="editProduct">Cập nhật</button>
               </div>                  
             </b-field>
           </div>
         </b-panel>
       </div>
     </div>
-    <b-modal :active.sync="isModalActive" has-modal-card>
-      <modal-form v-bind="formProps" v-model="modalValue"></modal-form>
-    </b-modal>
   </section>
 </template>
 
 <script>
-import ModalForm from '@/components/Modal/ModalForm'
 import {db} from '@/firebase'
 import _ from 'lodash'
 
 export default {
-  components: {
-    ModalForm
-  },
   data () {
     return {
       formatter: (date) => date.toLocaleDateString('vi-VN'),
@@ -248,7 +241,6 @@ export default {
       uomWSale: null,
       uomRetail: null,
       uomRate: 0,
-      isModalActive: false,
       formProps: {
         info: '',
         action: ''
@@ -304,7 +296,6 @@ export default {
       })
     },
     resetForm () {
-      // this.category = null
       this.productName = ''
       this.chemical = null
       this.chemicalValue = ''
@@ -334,24 +325,64 @@ export default {
       window.scrollTo(0, 0)
     },
     addCategory () {
-      this.formProps.info = 'Danh mục'
-      this.formProps.action = 'addCategory'
-      this.isModalActive = true
+      this.$dialog.prompt({
+        title: `Danh Mục Mới`,
+        confirmText: 'OK',
+        onConfirm: (value) => this.$firebaseRefs.categories.push({
+          value: value,
+          last_update: Date.now()
+        }).then(() => {
+          this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Danh mục thành công.' })
+        }).catch(error => {
+          this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+          console.log(error)
+        })
+      })
     },
     addChemical () {
-      this.formProps.info = 'Hoạt chất'
-      this.formProps.action = 'addChemical'
-      this.isModalActive = true
+      this.$dialog.prompt({
+        title: `Hoạt Chất Mới`,
+        confirmText: 'OK',
+        onConfirm: (value) => this.$firebaseRefs.chemicals.push({
+          value: value,
+          last_update: Date.now()
+        }).then(() => {
+          this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Hoạt chất thành công.' })
+        }).catch(error => {
+          this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+          console.log(error)
+        })
+      })
     },
     addClass () {
-      this.formProps.info = 'Nhóm dược'
-      this.formProps.action = 'addClass'
-      this.isModalActive = true
+      this.$dialog.prompt({
+        title: `Nhóm Dược Mới`,
+        confirmText: 'OK',
+        onConfirm: (value) => this.$firebaseRefs.classes.push({
+          value: value,
+          last_update: Date.now()
+        }).then(() => {
+          this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Nhóm dược thành công.' })
+        }).catch(error => {
+          this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+          console.log(error)
+        })
+      })
     },
     addUom () {
-      this.formProps.info = 'Đơn vị'
-      this.formProps.action = 'addUom'
-      this.isModalActive = true
+      this.$dialog.prompt({
+        title: `Đơn Vị Tính Mới`,
+        confirmText: 'OK',
+        onConfirm: (value) => this.$firebaseRefs.uoms.push({
+          value: value,
+          last_update: Date.now()
+        }).then(() => {
+          this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Đơn vị tính thành công.' })
+        }).catch(error => {
+          this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+          console.log(error)
+        })
+      })
     },
     confirmRemoveProduct (obj) {
       this.$dialog.confirm({

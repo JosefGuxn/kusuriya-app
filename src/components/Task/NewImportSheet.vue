@@ -21,7 +21,7 @@
             <div class="tile">
               <strong class="tile is-child is-3 is-size-5">Nhà cung cấp</strong>
               <div class="tile is-child is-6">
-                <b-field grouped>
+                <b-field :type="supplier ? '':'is-danger'" grouped>
                   <b-select placeholder="Chọn nhà cung cấp" v-model="supplier" expanded>
                     <option :value="supplier.value" v-for="supplier in suppliers" :key="supplier['.key']">
                       {{ supplier.value }}
@@ -122,7 +122,7 @@
             <div class="tile is-child">
               <strong>Sản phẩm</strong>
               <b-field :type="seletedProduct === null ? 'is-danger':''">
-                <b-autocomplete ref="inputProduct" v-model="productValue" :data="filteredProducts" @select="o => seletedProduct = o" field="product_name" expanded keep-first>
+                <b-autocomplete ref="inputProduct" v-model="productValue" :data="filteredProducts" @select="selectProduct" field="product_name" expanded keep-first>
                 </b-autocomplete>
               </b-field>
             </div>
@@ -166,21 +166,14 @@
         </b-panel>
       </div>
     </div>
-    <b-modal :active.sync="isModalActive" has-modal-card>
-      <modal-form v-bind="formProps"></modal-form>
-    </b-modal>
   </section>
 </template>
 
 <script>
-  import ModalForm from '@/components/Modal/ModalForm'
   import { db } from '@/firebase'
   import moment from 'moment'
   import _ from 'lodash'
   export default {
-    components: {
-      ModalForm
-    },
     data () {
       return {
         entries: [],
@@ -188,7 +181,6 @@
           info: '',
           action: ''
         },
-        isModalActive: false,
         supplier: null,
         sheet_date: new Date(),
         note: null,
@@ -219,8 +211,13 @@
       }
     },
     methods: {
-      moment (time) {
-        return moment(time).format('DD/MM/YYYY')
+      selectProduct (val) {
+        if (val) {
+          this.seletedProduct = val
+          var tmp = _.find(this.inventory, e => e['.key'] === val['.key'])
+          this.wSalePrice = tmp ? tmp.wsale_price : 0
+          this.retailPrice = tmp ? tmp.retail_price : 0
+        }
       },
       resetForm () {
         this.productValue = ''
@@ -262,16 +259,18 @@
         this.entries = this.entries.filter(o => o.id !== obj.id)
       },
       newSheetValidate () {
-        //
-        return {
-          supplier: this.supplier,
-          date: this.sheet_date.getTime(),
-          note: this.note
+        var condition = this.supplier && this.entries.length !== 0
+        if (condition) {
+          return {
+            supplier: this.supplier,
+            date: this.sheet_date.getTime(),
+            note: this.note
+          }
         }
       },
       importSheet () {
-        var newSheet = this.newSheetValidate()
         new Promise((resolve, reject) => {
+          var newSheet = this.newSheetValidate()
           if (newSheet) {
             this.$firebaseRefs.imports.push(newSheet)
             var tmp = this.imports[this.imports.length - 1]
@@ -304,27 +303,44 @@
           }
         }).then(() => {
           this.$store.dispatch('pushNotif', { message: 'Cập nhật Phiếu nhập thành công.', type: 'is-success' })
+          return true
         }).catch(() => {
           this.$store.dispatch('pushNotif', { message: 'Cập nhật thất bại.', type: 'is-danger' })
+          return false
         })
       },
       importSheetAndClose () {
-        this.importSheet()
-        this.$router.push('/dashboard')
+        if (this.importSheet()) {
+          this.$router.push('/dashboard')
+        }
       },
       importSheetAndReload () {
-        this.importSheet()
-        this.resetForm()
-        this.supplier = null
-        this.sheet_date = new Date()
-        this.note = null
-        this.entries = []
-        window.scrollTo(0, 0)
+        if (this.importSheet()) {
+          this.resetForm()
+          this.supplier = null
+          this.sheet_date = new Date()
+          this.note = null
+          this.entries = []
+          window.scrollTo(0, 0)
+        }
       },
       addSupplier () {
-        this.formProps.info = 'Nhà cung cấp'
-        this.formProps.action = 'addSupplier'
-        this.isModalActive = true
+        this.$dialog.prompt({
+          title: `Nhà Cung Cấp Mới`,
+          confirmText: 'OK',
+          onConfirm: (value) => this.$firebaseRefs.suppliers.push({
+            value: value,
+            last_update: Date.now()
+          }).then(() => {
+            this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Danh mục thành công.' })
+          }).catch(error => {
+            this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
+            console.log(error)
+          })
+        })
+      },
+      moment (time) {
+        return moment(time).format('DD/MM/YYYY')
       },
       toCurrency (number) {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
