@@ -48,18 +48,6 @@
           </div>
           <div class="panel-block">
             <div class="tile">
-              <strong class="tile is-child is-3 is-size-5">Ký gửi</strong>
-              <div class="tile is-child is-3">
-                <b-field>
-                  <div class="control">
-                    <b-checkbox v-model="is_consigned"></b-checkbox>
-                  </div>
-                </b-field>
-              </div>
-            </div>
-          </div>
-          <div class="panel-block">
-            <div class="tile">
               <strong class="tile is-child is-3 is-size-5">Ghi chú</strong>
               <div class="tile is-child is-6">
                 <b-field>
@@ -127,7 +115,7 @@
         <b-panel has-custom-template>
           <div class="tile is-size-3" slot="header">
             <strong class="tile is-child">
-              Thêm sản phẩm
+              Thêm Dữ liệu
             </strong>
           </div>
           <div class="panel-block tile is-vertical">
@@ -203,7 +191,6 @@
         isModalActive: false,
         supplier: null,
         sheet_date: new Date(),
-        is_consigned: false,
         note: null,
         productValue: '',
         seletedProduct: null,
@@ -279,7 +266,6 @@
         return {
           supplier: this.supplier,
           date: this.sheet_date.getTime(),
-          is_consigned: this.is_consigned,
           note: this.note
         }
       },
@@ -331,7 +317,6 @@
         this.resetForm()
         this.supplier = null
         this.sheet_date = new Date()
-        this.is_consigned = false
         this.note = null
         this.entries = []
         window.scrollTo(0, 0)
