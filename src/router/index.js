@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Login from '@/components/Login'
 import Dashboard from '@/components/Dashboard'
 import NewImportSheet from '@/components/Task/NewImportSheet'
+import NewExportSheet from '@/components/Task/NewExportSheet'
 import Inventory from '@/components/Product/Inventory'
 import ProductList from '@/components/Product/ProductList'
 
@@ -28,11 +29,16 @@ export default new Router({
       component: NewImportSheet
     },
     {
+      path: '/newexportsheet',
+      name: 'New Export Sheet',
+      component: NewExportSheet
+    },
+    {
       path: '/productslist',
       component: ProductList
     },
     {
-      path: '/drugsmanage',
+      path: '/inventory',
       component: Inventory
     },
     {
