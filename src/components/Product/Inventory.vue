@@ -248,11 +248,20 @@
           category: this.currentEditProduct.category,
           chemical: this.currentEditProduct.chemical,
           class: this.currentEditProduct.class,
+          uom_wsale: this.currentEditProduct.uom_wsale,
+          uom_retail: this.currentEditProduct.uom_retail,
+          uom_rate: this.currentEditProduct.uom_rate,
+          unit_price: this.currentEditProduct.unit_price,
+          logs: this.currentEditProduct.logs,
           quantity: this.quantity,
           stock_number: this.stockNumber,
           exp_date: this.expDate,
           wsale_price: this.wSalePrice,
           retail_price: this.retailPrice
+        }
+        update.logs[Date.now().toString()] = {
+          type: 'Edit',
+          quantity: this.quantity
         }
         this.$firebaseRefs.inventory.child(this.currentEditProduct['.key']).set(update).then(() => {
           this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Dữ liệu thành công.' })

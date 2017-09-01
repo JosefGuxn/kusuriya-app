@@ -13,7 +13,7 @@
                 <span>Lưu</span>
               </button>
               <button class="button is-primary" @click="importSheetAndReload">
-                <span>Lưu & Tạo mới mới</span>
+                <span>Lưu & Tạo mới</span>
               </button>
             </div>
           </div>
@@ -291,13 +291,14 @@ export default {
           update.class = e.product.class
           update.uom_wsale = e.product.uom_wsale
           update.uom_retail = e.product.uom_retail
+          update.uom_rate = e.product.uom_rate
 
           var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
 
           if (ind) {
             update.quantity += parseInt(ind.quantity)
             this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
-              .set(update.quantity + parseInt(ind.quantity))
+              .set(update.quantity)
             this.$firebaseRefs.inventory.child(e.product['.key'] + '/exp_date')
               .set(update.exp_date)
             this.$firebaseRefs.inventory.child(e.product['.key'] + '/unit_price')
@@ -312,7 +313,7 @@ export default {
           this.$firebaseRefs.inventory.child(e.product['.key'] + '/logs')
             .child(Date.now()).set({
               type: 'Import',
-              quantity: 100
+              quantity: update.quantity
             })
         })
         this.$store.dispatch('pushNotif', { message: 'Cập nhật Phiếu nhập thành công.', type: 'is-success' })
@@ -325,7 +326,7 @@ export default {
     importSheetAndClose () {
       var tmp = this.importSheet()
       if (tmp) {
-        this.$router.push('/dashboard')
+        this.$router.push('/inventory')
       }
     },
     importSheetAndReload () {
