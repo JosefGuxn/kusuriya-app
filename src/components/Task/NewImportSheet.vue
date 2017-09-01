@@ -74,7 +74,7 @@
                   {{ props.row.stock_number }}
                 </b-table-column>
 
-                <b-table-column label="Số Lượng" width="140">
+                <b-table-column label="Số Lượng Nhập" width="140">
                   {{ toNumber(props.row.quantity) }}
                 </b-table-column>
 
@@ -277,9 +277,6 @@
             this.entries.forEach((e) => {
               var update = {
                 product_name: e.product.product_name,
-                category: e.product.category,
-                chemical: e.product.chemical,
-                class: e.product.class,
                 stock_number: e.stock_number,
                 quantity: parseInt(e.quantity),
                 exp_date: e.exp_date.getTime(),
@@ -290,12 +287,34 @@
               this.$firebaseRefs.imports.child(tmp['.key'])
                 .child('entries').child(e.product['.key']).set(update)
 
+              update.category = e.product.category
+              update.chemical = e.product.chemical
+              update.class = e.product.class
+              update.uom_wsale = e.product.uom_wsale
+              update.uom_retail = e.product.uom_retail
+
               var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
 
               if (ind) {
                 update.quantity += parseInt(ind.quantity)
+                this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
+                  .set(update.quantity + parseInt(ind.quantity))
+                this.$firebaseRefs.inventory.child(e.product['.key'] + '/exp_date')
+                  .set(update.exp_date)
+                this.$firebaseRefs.inventory.child(e.product['.key'] + '/unit_price')
+                  .set(update.unit_price)
+                this.$firebaseRefs.inventory.child(e.product['.key'] + '/wsale_price')
+                  .set(update.wsale_price)
+                this.$firebaseRefs.inventory.child(e.product['.key'] + '/retail_price')
+                  .set(update.retail_price)
+              } else {
+                this.$firebaseRefs.inventory.child(e.product['.key']).set(update)
               }
-              this.$firebaseRefs.inventory.child(e.product['.key']).set(update)
+              this.$firebaseRefs.inventory.child(e.product['.key'] + '/logs')
+                .child(Date.now()).set({
+                  type: 'Import',
+                  quantity: 100
+                })
             })
             resolve()
           } else {
@@ -332,7 +351,7 @@
             value: value,
             last_update: Date.now()
           }).then(() => {
-            this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Danh mục thành công.' })
+            this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Nhà cung cấp thành công.' })
           }).catch(error => {
             this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
             console.log(error)
