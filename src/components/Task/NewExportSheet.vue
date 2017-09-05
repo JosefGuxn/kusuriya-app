@@ -367,6 +367,11 @@
       toNumber (number) {
         return new Intl.NumberFormat('vi-VN').format(number)
       }
+    },
+    created () {
+      if (!this.$store.getters.isLoggedIn) {
+        this.$router.replace('/login')
+      }
     }
   }
 </script>

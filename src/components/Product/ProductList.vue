@@ -464,6 +464,9 @@ export default {
     }
   },
   created () {
+    if (!this.$store.getters.isLoggedIn) {
+      return this.$router.replace('/login')
+    }
     this.dataTable = this.products
   }
 }

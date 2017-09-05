@@ -1,9 +1,9 @@
 <template>
   <div id="app" class="container is-fullhd">
-    <nav class="navbar has-shadow">
+    <nav v-if="isLoggedIn" class="navbar has-shadow">
       <div class="container">
         <div class="navbar-brand">
-          <router-link class="navbar-item" to="/dashboard">
+          <router-link class="navbar-item" to="/dashboard" replace>
             KSRya
           </router-link>
         </div>
@@ -23,10 +23,10 @@
                 <span>Tác vụ</span>
               </a>
               <div class="navbar-dropdown ">
-                <router-link class="navbar-item" to="/newimportsheet">
+                <router-link class="navbar-item" to="/newimportsheet" replace>
                   Nhập kho
                 </router-link>
-                <router-link class="navbar-item " to="/newexportsheet">
+                <router-link class="navbar-item " to="/newexportsheet" replace>
                   Xuất kho
                 </router-link>
                 <hr class="navbar-divider">
@@ -43,17 +43,17 @@
                 <span>Quản lý</span>
               </a>
               <div class="navbar-dropdown ">
-                <router-link class="navbar-item" to='/inventory'>
+                <router-link class="navbar-item" to='/inventory' replace>
                   Kho dược
                 </router-link>
-                <router-link class="navbar-item" to='/productslist'>
+                <router-link class="navbar-item" to='/productslist' replace>
                   Sản phẩm
                 </router-link>
                 <a class="navbar-item ">
                   Danh mục
                 </a>
                 <a class="navbar-item ">
-                  Nhà cung ứng
+                  Nhà cung cấp
                 </a>
                 <a class="navbar-item ">
                   Phiếu nhập/xuất
@@ -84,7 +84,7 @@
                   DO NOT PRESS!!
                 </router-link>
                 <hr class="navbar-divider">
-                <a class="navbar-item ">
+                <a class="navbar-item " @click="logout">
                   <span class="icon">
                     <b-icon icon="sign-out"></b-icon>
                   </span>
@@ -96,15 +96,24 @@
         </div>
       </div>
     </nav>
-    <div class="container is-fluid">
-      <router-view style="margin-top: 80px"></router-view>
-    </div>
+    <router-view style="margin-top: 80px"></router-view>
   </div>
 </template>
 
 <script>
   export default {
     name: 'ksrya',
+    computed: {
+      isLoggedIn () {
+        return this.$store.getters.isLoggedIn
+      }
+    },
+    methods: {
+      logout () {
+        this.$store.dispatch('logout')
+        this.$router.replace('/login')
+      }
+    },
     mounted () {
       this.$store.watch(this.$store.getters.notifsGetter, () => {
         this.$toast.open(this.$store.getters.newNotifGetter)
