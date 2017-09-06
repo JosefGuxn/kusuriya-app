@@ -94,19 +94,31 @@
               <template slot="detail" scope="props">
                 <article class="media">
                   <div class="media-content">
-                    <div class="content">
-                      <p>
-                        <strong>Nhóm dược</strong>
-                        <br> {{ props.row.class }}
-                      </p>
-                      <p>
-                        <strong>Hoạt chất</strong>
-                        <br> {{ props.row.chemical }}
-                      </p>
-                      <p>
-                        <strong>Giá mua</strong>
-                        <br> {{ toCurrency(props.row.unit_price) }}
-                      </p>
+                    <div class="content columns">
+                      <div class="column">
+                        <p>
+                          <strong>Nhóm dược</strong>
+                          <br> {{ props.row.class }}
+                        </p>
+                        <p>
+                          <strong>Hoạt chất</strong>
+                          <br> {{ props.row.chemical }}
+                        </p>
+                        <p>
+                          <strong>Giá mua</strong>
+                          <br> {{ toCurrency(props.row.unit_price) }}
+                        </p>
+                      </div>
+                      <div class="column">
+                        <p>
+                          <strong>Đv bán sỉ</strong>
+                          <br> {{ props.row.uom_wsale }}
+                        </p>
+                        <p>
+                          <strong>Đv bán lẻ</strong>
+                          <br> {{ props.row.uom_retail }}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </article>
