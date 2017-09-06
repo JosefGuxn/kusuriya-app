@@ -14,7 +14,8 @@ import 'buefy/lib/buefy.css'
 
 import VueFire from 'vuefire'
 import './firebase'
-// import * as firebase from 'firebase'
+
+import money from 'v-money'
 
 Vue.use(Buefy, {
   defaultIconPack: 'fa'
@@ -27,6 +28,12 @@ Vue.config.productionTip = false
 
 Vue.use(iView, { locale })
 
+Vue.use(money, {
+  thousands: ',',
+  prefix: 'đ ',
+  precision: 0,
+  masked: false
+})
 /* eslint-disable no-new */
 new Vue({
   components: { App },

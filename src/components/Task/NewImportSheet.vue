@@ -146,15 +146,18 @@
             </div>
             <div class="tile is-child">
               <strong>Giá mua</strong>
-              <b-input v-model="unitPrice" type="number"></b-input>
+              <money v-model="unitPrice" class="input"></money>
             </div>
             <div class="tile is-child">
               <strong>Giá bán sỉ</strong>
-              <b-input v-model="wSalePrice" type="number"></b-input>
+              <money v-model="wSalePrice" class="input"></money>
             </div>
             <div class="tile is-child">
               <strong>Giá bán lẻ</strong>
-              <b-input v-model="retailPrice" type="number"></b-input>
+              <money v-model="retailPrice" class="input"></money>
+            </div>
+            <div class="tile is-child">
+              <strong>Lợi nhuận {{profit}}%</strong>             
             </div>
           </div>
           <div class="panel-block">
@@ -208,6 +211,12 @@ export default {
           .toLowerCase()
           .indexOf(this.productValue.toLowerCase()) >= 0
       })
+    },
+    profit () {
+      if (this.unitPrice !== 0) {
+        return this.wSalePrice / this.unitPrice
+      }
+      return 0
     }
   },
   methods: {
