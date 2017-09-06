@@ -28,6 +28,7 @@
           </div>
           <div class="content">
             <b-table :data="dataTable" bordered striped detailed narrowed 
+              per-page="10" pagination-simple striped paginated
               :loading="dataTable.length === 0"
               default-sort="category" default-sort-direction="asc">
               <template slot="header" scope="props">
@@ -155,11 +156,11 @@
             </div>
             <div class="tile is-child">
               <strong>Giá bán sỉ</strong>
-              <b-input v-model="wSalePrice" type="number"></b-input>
+              <money v-model="wSalePrice" class="input"></money>
             </div>      
             <div class="tile is-child">
               <strong>Giá bán lẻ</strong>
-              <b-input v-model="retailPrice" type="number"></b-input>
+              <money v-model="retailPrice" class="input"></money>
             </div>      
           </div>
           <div class="panel-block">
