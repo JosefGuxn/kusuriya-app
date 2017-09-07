@@ -309,7 +309,7 @@ export default {
             update.quantity += parseInt(ind.quantity)
             this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
               .set(update.quantity)
-            this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
+            this.$firebaseRefs.inventory.child(e.product['.key'] + '/remainder')
               .set(update.remainder)
             this.$firebaseRefs.inventory.child(e.product['.key'] + '/exp_date')
               .set(update.exp_date)
