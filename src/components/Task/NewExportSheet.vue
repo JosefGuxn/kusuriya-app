@@ -300,8 +300,9 @@
 
               var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
 
-              if (e.isWSale) {
+              if (e.is_wsale) {
                 update.quantity = ind.quantity - update.quantity
+                update.remainder = ind.remainder
               } else {
                 var quo = Math.floor(update.quantity / ind.uom_rate)
                 var rem = update.quantity % ind.uom_rate
@@ -338,41 +339,16 @@
         })
       },
       importSheetAndReload () {
-        var check = true
-        this.entries.forEach(e => {
-          var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
-
-          if (parseInt(ind.quantity) -
-            (e.is_wsale ? e.quantity * ind.uom_rate : e.quantity) < 0) {
-            check = false
-          }
+        this.importSheet().then(() => {
+          this.$store.dispatch('pushNotif', { message: 'Cập nhật Phiếu nhập thành công.', type: 'is-success' })
+          this.resetForm()
+          this.sheet_date = new Date()
+          this.note = null
+          this.entries = []
+          window.scrollTo(0, 0)
+        }).catch(() => {
+          this.$store.dispatch('pushNotif', { message: 'Cập nhật thất bại.', type: 'is-danger' })
         })
-        if (!check) {
-          this.$dialog.confirm({
-            title: 'Vượt quá tồn kho',
-            message: `Có sản phẩm vượt quá tồn kho. Có muốn tiếp tục?`,
-            confirmText: 'Tiếp tục',
-            type: 'is-danger',
-            hasIcon: true,
-            onConfirm: () => {
-              if (this.importSheet()) {
-                this.resetForm()
-                this.sheet_date = new Date()
-                this.note = null
-                this.entries = []
-                window.scrollTo(0, 0)
-              }
-            }
-          })
-        } else {
-          if (this.importSheet()) {
-            this.resetForm()
-            this.sheet_date = new Date()
-            this.note = null
-            this.entries = []
-            window.scrollTo(0, 0)
-          }
-        }
       },
       moment (time) {
         return moment(time).format('DD/MM/YYYY')
