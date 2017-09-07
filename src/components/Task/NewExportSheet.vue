@@ -246,80 +246,96 @@
         this.grandTotal -= obj.total
       },
       newSheetValidate () {
-        var condition = this.entries.length !== 0
+        return new Promise((resolve, reject) => {
+          var condition = this.entries.length !== 0
 
-        if (condition) {
-          return {
-            date: this.sheet_date.getTime(),
-            note: this.note,
-            grand_total: this.grandTotal
-          }
-        }
-      },
-      importSheet () {
-        var newSheet = this.newSheetValidate()
-        if (newSheet) {
-          this.$firebaseRefs.exports.push(newSheet)
-          var tmp = this.exports[this.exports.length - 1]
-          this.entries.forEach((e) => {
-            var update = {
-              product_name: e.product.product_name,
-              is_wsale: e.is_wsale,
-              quantity: parseInt(e.quantity),
-              uom: e.uom,
-              price: parseInt(e.price),
-              total: parseInt(e.total)
-            }
-            this.$firebaseRefs.exports.child(tmp['.key'])
-              .child('entries').child(e.product['.key']).set(update)
-
-            var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
-
-            update.quantity = parseInt(ind.quantity) -
-              (e.is_wsale ? e.quantity * ind.uom_rate : e.quantity)
-            this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
-              .set(update.quantity)
-            this.$firebaseRefs.inventory.child(e.product['.key'] + '/logs')
-              .child(Date.now()).set({
-                type: 'Export',
-                quantity: update.quantity
+          if (condition) {
+            var failed = false
+            this.entries.forEach(e => {
+              var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
+              var tmp = e.is_wsale ? e.quantity * ind.uom_rate : e.quantity
+              if (ind.quantity * ind.uom_rate + ind.remainder - tmp < 0) {
+                failed = true
+              }
+            })
+            if (failed) {
+              this.$dialog.confirm({
+                title: 'Vượt quá tồn kho',
+                message: `Có sản phẩm vượt quá tồn kho. Có muốn tiếp tục?`,
+                confirmText: 'Tiếp tục',
+                type: 'is-danger',
+                hasIcon: true,
+                onConfirm: () => resolve({
+                  date: this.sheet_date.getTime(),
+                  note: this.note,
+                  grand_total: this.grandTotal
+                })
               })
-          })
-          this.$store.dispatch('pushNotif', { message: 'Cập nhật Phiếu nhập thành công.', type: 'is-success' })
-          return true
-        } else {
-          this.$store.dispatch('pushNotif', { message: 'Cập nhật thất bại.', type: 'is-danger' })
-          return false
-        }
-      },
-      importSheetAndClose () {
-        var check = true
-        this.entries.forEach(e => {
-          var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
-
-          if (parseInt(ind.quantity) -
-            (e.is_wsale ? e.quantity * ind.uom_rate : e.quantity) < 0) {
-            check = false
+            } else {
+              resolve({
+                date: this.sheet_date.getTime(),
+                note: this.note,
+                grand_total: this.grandTotal
+              })
+            }
           }
         })
-        if (!check) {
-          this.$dialog.confirm({
-            title: 'Vượt quá tồn kho',
-            message: `Có sản phẩm vượt quá tồn kho. Có muốn tiếp tục?`,
-            confirmText: 'Tiếp tục',
-            type: 'is-danger',
-            hasIcon: true,
-            onConfirm: () => {
-              if (this.importSheet()) {
-                this.$router.push('/inventory')
+      },
+      importSheet () {
+        return new Promise((resolve, reject) => {
+          this.newSheetValidate().then((newSheet) => {
+            this.$firebaseRefs.exports.child(newSheet.date).set(newSheet)
+            var tmp = this.exports[this.exports.length - 1]
+            this.entries.forEach((e) => {
+              var update = {
+                product_name: e.product.product_name,
+                is_wsale: e.is_wsale,
+                quantity: parseInt(e.quantity),
+                uom: e.uom,
+                price: parseInt(e.price),
+                total: parseInt(e.total)
               }
-            }
+              this.$firebaseRefs.exports.child(tmp['.key'])
+                .child('entries').child(e.product['.key']).set(update)
+
+              var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
+
+              if (e.isWSale) {
+                update.quantity = ind.quantity - update.quantity
+              } else {
+                var quo = Math.floor(update.quantity / ind.uom_rate)
+                var rem = update.quantity % ind.uom_rate
+                if (rem > ind.remainder) {
+                  quo += 1
+                  rem = rem - ind.uom_rate
+                }
+                update.quantity = ind.quantity - quo
+                update.remainder = ind.remainder - rem
+              }
+              this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
+                .set(update.quantity)
+              this.$firebaseRefs.inventory.child(e.product['.key'] + '/remainder')
+                .set(update.remainder)
+              this.$firebaseRefs.inventory.child(e.product['.key'] + '/logs')
+                .child(Date.now()).set({
+                  type: 'Export',
+                  quantity: update.quantity,
+                  remainder: update.remainder
+                })
+            })
+            resolve()
+          }).catch(() => {
+            reject()
           })
-        } else {
-          if (this.importSheet()) {
-            this.$router.push('/inventory')
-          }
-        }
+        })
+      },
+      importSheetAndClose () {
+        this.importSheet().then(() => {
+          this.$store.dispatch('pushNotif', { message: 'Cập nhật Phiếu nhập thành công.', type: 'is-success' })
+          this.$router.push('/inventory')
+        }).catch(() => {
+          this.$store.dispatch('pushNotif', { message: 'Cập nhật thất bại.', type: 'is-danger' })
+        })
       },
       importSheetAndReload () {
         var check = true

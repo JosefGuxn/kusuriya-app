@@ -157,7 +157,7 @@
               <money v-model="retailPrice" class="input"></money>
             </div>
             <div class="tile is-child">
-              <strong>Lợi nhuận {{profit}}%</strong>             
+              <strong>Lợi nhuận {{ profit }}%</strong>             
             </div>
           </div>
           <div class="panel-block">
@@ -214,7 +214,7 @@ export default {
     },
     profit () {
       if (this.unitPrice !== 0) {
-        return this.wSalePrice / this.unitPrice
+        return Math.round(((this.wSalePrice - this.unitPrice) / this.unitPrice) * 100) / 100
       }
       return 0
     }
@@ -280,7 +280,7 @@ export default {
     importSheet () {
       var newSheet = this.newSheetValidate()
       if (newSheet) {
-        this.$firebaseRefs.imports.push(newSheet)
+        this.$firebaseRefs.imports.child(newSheet.date).set(newSheet)
         var tmp = this.imports[this.imports.length - 1]
         this.entries.forEach((e) => {
           var update = {
@@ -301,6 +301,7 @@ export default {
           update.uom_wsale = e.product.uom_wsale
           update.uom_retail = e.product.uom_retail
           update.uom_rate = e.product.uom_rate
+          update.remainder = e.product.remainder || 0
 
           var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
 
@@ -308,6 +309,8 @@ export default {
             update.quantity += parseInt(ind.quantity)
             this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
               .set(update.quantity)
+            this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
+              .set(update.remainder)
             this.$firebaseRefs.inventory.child(e.product['.key'] + '/exp_date')
               .set(update.exp_date)
             this.$firebaseRefs.inventory.child(e.product['.key'] + '/unit_price')

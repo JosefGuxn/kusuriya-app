@@ -53,7 +53,8 @@
 
                 <b-table-column label="Số Lượng" width="130" centered>
                   <strong class="tag is-info is-size-6">
-                    {{ toNumber(props.row.quantity) }}
+                    {{ toNumber(props.row.quantity) }} {{ props.row.uom_wsale }} 
+                    {{ props.row.remainder > 0 ? (toNumber(props.row.remainder) + ' ' + props.row.uom_retail) : '' }}
                   </strong>
                 </b-table-column>
 
@@ -167,6 +168,10 @@
               </div>
             </div>
             <div class="tile is-child">
+              <strong>Giá mua</strong>
+              <money v-model="unitPrice" class="input"></money>
+            </div> 
+            <div class="tile is-child">
               <strong>Giá bán sỉ</strong>
               <money v-model="wSalePrice" class="input"></money>
             </div>      
@@ -201,6 +206,7 @@
         stockNumber: null,
         expDate: null,
         quantity: null,
+        unitPrice: null,
         wSalePrice: null,
         retailPrice: null
       }
@@ -252,6 +258,7 @@
         this.quantity = obj.quantity
         this.stockNumber = obj.stock_number
         this.expDate = obj.exp_date
+        this.unitPrice = obj.unit_price
         this.wSalePrice = obj.wsale_price
         this.retailPrice = obj.retail_price
       },
@@ -264,7 +271,8 @@
           uom_wsale: this.currentEditProduct.uom_wsale,
           uom_retail: this.currentEditProduct.uom_retail,
           uom_rate: this.currentEditProduct.uom_rate,
-          unit_price: this.currentEditProduct.unit_price,
+          remainder: this.currentEditProduct.remainder,
+          unit_price: this.unitPrice,
           logs: this.currentEditProduct.logs,
           quantity: this.quantity,
           stock_number: this.stockNumber,
