@@ -19,7 +19,7 @@
                 </button>           
               </b-field> 
               <div class="tile is-child is-5">
-                <button class="button is-primary">
+                <button class="button is-primary" @click="print">
                   <b-icon icon="print"></b-icon>
                   <span>Print</span>
                 </button>
@@ -292,6 +292,9 @@
           this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
           console.log(error)
         })
+      },
+      print () {
+        this.$router.replace('/inventoryreport')
       },
       moment (time) {
         return moment(time).format('DD/MM/YYYY')

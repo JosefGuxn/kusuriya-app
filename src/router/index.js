@@ -6,6 +6,7 @@ import NewImportSheet from '@/components/Task/NewImportSheet'
 import NewExportSheet from '@/components/Task/NewExportSheet'
 import Inventory from '@/components/Product/Inventory'
 import ProductList from '@/components/Product/ProductList'
+import InventoryReport from '@/components/Report/InventoryReport'
 
 import Helper from '@/components/DbHelper'
 
@@ -40,6 +41,10 @@ export default new Router({
     {
       path: '/inventory',
       component: Inventory
+    },
+    {
+      path: '/inventoryreport',
+      component: InventoryReport
     },
     {
       path: '/dbhelper',
