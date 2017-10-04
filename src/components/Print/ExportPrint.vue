@@ -10,8 +10,8 @@
       <div class="tile is-child">
         <p class="is-size-6">
           <b class="subtitle">NHÀ THUỐC SỐ 41</b> <br>
-          Địa chỉ:<br>
-          Sđt:
+          Địa chỉ: Số 1, Đường Ni Sư Huỳnh Liên, Phường 10, Q.Tân Bình<br>
+          Sđt: 08 38 600 847
         </p>
       </div>
       <div class="tile is-child">
