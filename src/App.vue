@@ -55,9 +55,12 @@
                 <a class="navbar-item ">
                   Nhà cung cấp
                 </a>
-                <a class="navbar-item ">
-                  Phiếu nhập/xuất
-                </a>
+                 <router-link class="navbar-item" to='/importreport' replace>
+                  Phiếu nhập
+                </router-link>
+                 <router-link class="navbar-item" to='/exportreport' replace>
+                  Phiếu xuất
+                </router-link>                
                 <hr class="navbar-divider">
                 <a class="navbar-item ">
                   Nhân viên
