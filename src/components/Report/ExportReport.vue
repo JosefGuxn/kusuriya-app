@@ -67,9 +67,9 @@
                           <p>{{ props.row.product_name }}</p>
                         </b-table-column>
                         <b-table-column label="Số Lượng Xuất">
-                          <p>{{ props.row.quan_w + ' ' + props.row.uom_wsale + ' ' 
-                              + props.row.quan_r + ' ' + props.row.uom_retail }}
-                          </p>
+                          {{(props.row.quan_w ? + props.row.quan_w + ' ' + props.row.uom_wsale : '')
+                              + ' ' 
+                              + (props.row.quan_r ? + props.row.quan_r + ' ' + props.row.uom_retail : '')}}
                         </b-table-column>
                         <b-table-column label="Thành Tiền">
                           <p>{{ toCurrency(props.row.total) }}</p>

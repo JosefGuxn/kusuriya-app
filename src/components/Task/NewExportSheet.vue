@@ -42,7 +42,8 @@
             </div>
           </div>
           <div class="content" style="margin-top: 20px">
-            <b-table :data="entries" narrowed bordered>
+            <b-table :data="entries" narrowed bordered
+            :row-class="(row, index) => row.inv_w < 0 ? 'is-warning' : ''">
               <template slot="header" scope="props">
                 <strong class="is-size-5">
                   {{ props.column.label }}
@@ -53,23 +54,19 @@
                   {{ props.row.product.product_name }}
                 </b-table-column>
 
-                <b-table-column label="Kiểu xuất">
-                  {{ props.row.is_wsale ? "Sỉ" : "Lẻ" }}
+                <b-table-column label="Xuất" width="140">
+                  {{(props.row.quan_w ? + props.row.quan_w + ' ' + props.row.uom_wsale : '')
+                    + ' ' 
+                    + (props.row.quan_r ? + props.row.quan_r + ' ' + props.row.uom_retail : '')}}
                 </b-table-column>
 
-                <b-table-column label="Số Lượng Xuất" width="140">
-                  {{ toNumber(props.row.quantity) }}
-                </b-table-column>               
-
-                <b-table-column label="Đơn Vị" width="120">
-                  {{ props.row.uom }}
+                <b-table-column label="Tồn" width="140">
+                  {{(props.row.inv_w ? + props.row.inv_w + ' ' + props.row.uom_wsale : '')
+                    + ' ' 
+                    + (props.row.inv_r ? + props.row.inv_r + ' ' + props.row.uom_retail : '')}}
                 </b-table-column>
 
-                <b-table-column label="Giá Bán" width="140">
-                  {{ toCurrency(props.row.price) }}
-                </b-table-column>
-
-                <b-table-column label="Tổng" width="140">
+                <b-table-column label="Thành Tiền" width="160">
                   {{ toCurrency(props.row.total) }}
                 </b-table-column>
 
@@ -101,7 +98,7 @@
               </template>
             </b-table>
           </div>
-          <div class="panel-block">           
+          <div class="panel-block">
             <div class="tile">
               <strong class="tile is-child is-3 is-size-5">Tổng tiền</strong>
               <div class="tile is-child is-6">
@@ -127,9 +124,13 @@
               </b-field>
             </div>      
             <div class="tile is-child">
-              <strong>Kiểu xuất</strong>
+              <strong>Đơn vị xuất</strong>
               <b-switch v-model="isWSale" size="is-medium" @input="switchChange">
-                <strong>{{ isWSale ? "Sỉ" : "Lẻ" }}</strong>
+                <strong>
+                  {{ selectedProduct ? (isWSale ? 
+                    selectedProduct.uom_wsale : selectedProduct.uom_retail ):''
+                  }}
+                </strong>
               </b-switch>
             </div> 
             <div class="tile is-child">
@@ -176,7 +177,6 @@
         isWSale: false,
         quantity: 0,
         unitPrice: 0,
-        grandTotal: 0,
         entryNote: null
       }
     },
@@ -191,6 +191,11 @@
             .toString()
             .toLowerCase()
             .indexOf(this.productValue.toLowerCase()) >= 0
+        })
+      },
+      grandTotal () {
+        return _.sumBy(this.entries, e => {
+          return e.total
         })
       }
     },
@@ -215,31 +220,54 @@
         this.unitPrice = 0
         this.entryNote = 0
       },
-      newRowVadilate () {
-        if (this.selectedProduct) {
-          return {
+      addRow () {
+        if (!this.selectedProduct) return
+
+        var ind = _.find(this.entries, e => {
+          return e.product['.key'] === this.selectedProduct['.key']
+        })
+
+        if (ind) {
+          ind.quan_w += this.isWSale ? parseInt(this.quantity) : 0
+          ind.quan_r += this.isWSale ? 0 : parseInt(this.quantity)
+          if (this.isWSale) {
+            ind.inv_w -= this.quantity
+          } else {
+            ind.inv_w -= Math.floor(this.quantity / this.selectedProduct.uom_rate)
+            ind.inv_r -= this.quantity % this.selectedProduct.uom_rate
+            if (ind.inv_r < 0) {
+              ind.inv_w -= 1
+              ind.inv_r = -1
+            }
+          }
+          ind.total += this.quantity * this.unitPrice
+        } else {
+          ind = {
             id: _.random(1111, 9999),
             product: this.selectedProduct,
-            is_wsale: this.isWSale,
-            quantity: this.quantity,
-            price: this.unitPrice,
-            uom: this.isWSale ? this.selectedProduct.uom_wsale : this.selectedProduct.uom_retail,
+            quan_w: this.isWSale ? parseInt(this.quantity) : 0,
+            quan_r: this.isWSale ? 0 : parseInt(this.quantity),
+            inv_w: this.selectedProduct.quantity,
+            inv_r: this.selectedProduct.remainder,
+            uom_wsale: this.selectedProduct.uom_wsale,
+            uom_retail: this.selectedProduct.uom_retail,
             total: this.quantity * this.unitPrice
           }
+          if (this.isWSale) {
+            ind.inv_w -= this.quantity
+          } else {
+            ind.inv_w -= Math.floor(this.quantity / this.selectedProduct.uom_rate)
+            ind.inv_r -= this.quantity % this.selectedProduct.uom_rate
+            if (ind.inv_r < 0) {
+              ind.inv_w -= 1
+              ind.inv_r = -1
+            }
+          }
+          this.entries.push(ind)
         }
-        return null
-      },
-      addRow () {
-        var newRow = this.newRowVadilate()
-        if (newRow) {
-          this.entries.push(newRow)
-          this.grandTotal += newRow.total
-          this.resetForm()
-          this.$refs.inputProduct.focus()
-          window.scrollTo(0, 0)
-        } else {
-          this.$store.dispatch('pushNotif', { message: 'Chưa chọn Sản phẩm.', type: 'is-warning' })
-        }
+        this.resetForm()
+        this.$refs.inputProduct.focus()
+        window.scrollTo(0, 0)
       },
       deleteRow (obj) {
         this.entries = this.entries.filter(o => o.id !== obj.id)
@@ -250,14 +278,7 @@
           var condition = this.entries.length !== 0
 
           if (condition) {
-            var failed = false
-            this.entries.forEach(e => {
-              var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
-              var tmp = e.is_wsale ? e.quantity * ind.uom_rate : e.quantity
-              if (ind.quantity * ind.uom_rate + ind.remainder - tmp < 0) {
-                failed = true
-              }
-            })
+            var failed = this.entries.map(e => e.inv_w < 0).length > 0
             if (failed) {
               this.$dialog.confirm({
                 title: 'Vượt quá tồn kho',
@@ -284,44 +305,33 @@
       importSheet () {
         return new Promise((resolve, reject) => {
           this.newSheetValidate().then((newSheet) => {
-            this.$firebaseRefs.exports.child(newSheet.date).set(newSheet)
+            this.$firebaseRefs.exports.child(Date.now()).set(newSheet)
             var tmp = this.exports[this.exports.length - 1]
             this.entries.forEach((e) => {
               var update = {
                 product_name: e.product.product_name,
-                is_wsale: e.is_wsale,
-                quantity: parseInt(e.quantity),
-                uom: e.uom,
-                price: parseInt(e.price),
+                quan_w: parseInt(e.quan_w),
+                quan_r: parseInt(e.quan_r),
+                inv_w: parseInt(e.inv_w),
+                inv_r: parseInt(e.inv_r),
+                wsale_price: e.product.wsale_price,
+                retail_price: e.product.retail_price,
+                uom_wsale: e.uom_wsale,
+                uom_retail: e.uom_retail,
                 total: parseInt(e.total)
               }
               this.$firebaseRefs.exports.child(tmp['.key'])
                 .child('entries').child(e.product['.key']).set(update)
 
-              var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
-
-              if (e.is_wsale) {
-                update.quantity = ind.quantity - update.quantity
-                update.remainder = ind.remainder
-              } else {
-                var quo = Math.floor(update.quantity / ind.uom_rate)
-                var rem = update.quantity % ind.uom_rate
-                if (rem > ind.remainder) {
-                  quo += 1
-                  rem = rem - ind.uom_rate
-                }
-                update.quantity = ind.quantity - quo
-                update.remainder = ind.remainder - rem
-              }
               this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
-                .set(update.quantity)
+                .set(update.inv_w)
               this.$firebaseRefs.inventory.child(e.product['.key'] + '/remainder')
-                .set(update.remainder)
+                .set(update.inv_r)
               this.$firebaseRefs.inventory.child(e.product['.key'] + '/logs')
                 .child(Date.now()).set({
                   type: 'Export',
-                  quantity: update.quantity,
-                  remainder: update.remainder
+                  quantity: update.inv_w,
+                  remainder: update.inv_r
                 })
             })
             resolve()
@@ -368,6 +378,8 @@
   }
 </script>
 
-<style scoped>
-
+<style>
+tr.is-warning {
+  background: hsl(48, 100%, 67%) !important;
+}
 </style>
