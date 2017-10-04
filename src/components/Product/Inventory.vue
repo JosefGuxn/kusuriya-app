@@ -130,9 +130,9 @@
       </div>
       <div v-if="isEditMode" class="column is-4">
         <b-panel has-custom-template>
-          <div class="tile is-size-3" slot="header">           
+          <div class="tile" slot="header">
             <strong class="tile is-child">
-              Sửa Dữ liệu
+              {{ currentEditProduct.product_name }}
             </strong>
             <div class="tile is-child is-1 has-text-right">
               <button class="button" @click="isEditMode = false">
@@ -140,22 +140,18 @@
               </button>
             </div>
           </div>
-          <div class="panel-block tile is-vertical">
-            <div class="tile is-child">
-              <strong>Danh mục</strong>
-              {{ currentEditProduct.category }}
-            </div>
-            <div class="tile is-child">
-              <strong>Tên sản phẩm</strong>
-              {{ currentEditProduct.product_name }}
-            </div>      
+          <div class="panel-block tile is-vertical">     
             <div class="tile is-child">
               <strong>Số lô</strong>
               <b-input v-model="stockNumber"></b-input>
             </div>         
             <div class="tile is-child">
-              <strong>Số lượng</strong>
+              <strong>Số lượng Sỉ</strong>
               <b-input v-model="quantity" type="number"></b-input>
+            </div>
+            <div class="tile is-child">
+              <strong>Số lượng Lẻ</strong>
+              <b-input v-model="remainder" type="number"></b-input>
             </div>
             <div class="tile is-child">
               <div class="tile is-vertical">
@@ -206,6 +202,7 @@
         stockNumber: null,
         expDate: null,
         quantity: null,
+        remainder: null,
         unitPrice: null,
         wSalePrice: null,
         retailPrice: null
@@ -256,6 +253,7 @@
         this.isEditMode = true
         this.currentEditProduct = obj
         this.quantity = obj.quantity
+        this.remainder = obj.remainder
         this.stockNumber = obj.stock_number
         this.expDate = obj.exp_date
         this.unitPrice = obj.unit_price
@@ -271,7 +269,7 @@
           uom_wsale: this.currentEditProduct.uom_wsale,
           uom_retail: this.currentEditProduct.uom_retail,
           uom_rate: this.currentEditProduct.uom_rate,
-          remainder: this.currentEditProduct.remainder,
+          remainder: this.remainder,
           unit_price: this.unitPrice,
           logs: this.currentEditProduct.logs,
           quantity: this.quantity,
@@ -280,9 +278,10 @@
           wsale_price: this.wSalePrice,
           retail_price: this.retailPrice
         }
-        update.logs[Date.now().toString()] = {
+        update.logs[Date.now()] = {
           type: 'Edit',
-          quantity: this.quantity
+          quantity: this.quantity,
+          remainder: this.remainder
         }
         this.$firebaseRefs.inventory.child(this.currentEditProduct['.key']).set(update).then(() => {
           this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Dữ liệu thành công.' })
