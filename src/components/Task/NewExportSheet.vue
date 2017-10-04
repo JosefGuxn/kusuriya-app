@@ -278,7 +278,7 @@
           var condition = this.entries.length !== 0
 
           if (condition) {
-            var failed = this.entries.map(e => e.inv_w < 0).length > 0
+            var failed = this.entries.filter(e => e.inv_w < 0).length > 0
             if (failed) {
               this.$dialog.confirm({
                 title: 'Vượt quá tồn kho',
