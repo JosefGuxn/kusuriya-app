@@ -48,13 +48,7 @@
                 </router-link>
                 <router-link class="navbar-item" to='/productslist' replace>
                   Sản phẩm
-                </router-link>
-                <a class="navbar-item ">
-                  Danh mục
-                </a>
-                <a class="navbar-item ">
-                  Nhà cung cấp
-                </a>
+                </router-link>               
                  <router-link class="navbar-item" to='/importreport' replace>
                   Phiếu nhập
                 </router-link>
