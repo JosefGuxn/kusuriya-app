@@ -130,5 +130,10 @@
   .panel-heading {
     background-color: hsl(0, 0%, 71%);
   }
+  @media print {
+    .navbar {
+      display: none;
+    }
+  }
 </style>
 

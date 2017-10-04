@@ -1,7 +1,7 @@
 <template>
   <section>
     <div class="tile is-vertical">
-      <div class="tile is-child">
+      <div class="tile is-child hide-content">
         <button class="button is-primary" @click="print">
           <b-icon icon="print"></b-icon>
           <span>Print</span>
@@ -19,8 +19,9 @@
           THÔNG TIN KHO THUỐC
         </p>
       </div>
-      <div class="tile is-child">
-        <b-table :data="dataTable" bordered narrowed striped>
+      <div v-cloak class="tile is-child">
+        <b-table :data="dataTable" bordered narrowed striped
+          :loading="dataTable.length === 0">
           <template slot="header" scope="props">
             <strong class="is-size-6">
               {{ props.column.label }}
@@ -88,7 +89,7 @@
         window.print()
       },
       moment (time) {
-        return moment(time).format('DD/MM/YYYY')
+        return moment(time).format('DD-MM-YYYY')
       },
       toCurrency (number) {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
@@ -107,5 +108,12 @@
 </script>
 
 <style scoped>
-
+[v-cloak] {
+  display: none;
+}
+@media print {
+  .hide-content {
+    display: none;
+  }
+}
 </style>

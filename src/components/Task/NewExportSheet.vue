@@ -343,7 +343,7 @@
       importSheetAndClose () {
         this.importSheet().then(() => {
           this.$store.dispatch('pushNotif', { message: 'Cập nhật Phiếu nhập thành công.', type: 'is-success' })
-          this.$router.push('/inventory')
+          this.$router.replace('/inventory')
         }).catch(() => {
           this.$store.dispatch('pushNotif', { message: 'Cập nhật thất bại.', type: 'is-danger' })
         })

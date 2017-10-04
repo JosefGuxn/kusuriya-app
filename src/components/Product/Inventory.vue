@@ -19,10 +19,10 @@
                 </button>           
               </b-field> 
               <div class="tile is-child is-5">
-                <button class="button is-primary" @click="print">
+                <a class="button is-primary" href="/inventoryprint" target="_blank">
                   <b-icon icon="print"></b-icon>
                   <span>Print</span>
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -180,7 +180,7 @@
             <b-field>
               <div class="control">
                 <button class="button is-dark" @click="editProduct">Sửa</button>
-              </div>                  
+              </div>
             </b-field>
           </div>
         </b-panel>
@@ -291,9 +291,6 @@
           this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
           console.log(error)
         })
-      },
-      print () {
-        this.$router.replace('/inventoryreport')
       },
       moment (time) {
         return moment(time).format('DD/MM/YYYY')

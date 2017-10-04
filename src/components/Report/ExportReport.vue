@@ -4,20 +4,18 @@
       <div class="column">
         <b-panel has-custom-template>
           <div class="is-size-3 tile is-ancestor" slot="header">
-            <strong class="tile is-parent is-5 has-text-primary">
+            <strong class="tile is-parent is-4 has-text-primary">
               Thông tin Phiếu Xuất
             </strong>
-            <div class="tile is-parent">
-              <b-field class="tile is-child">
-                <div class="control">
-                  <DatePicker v-model="date" type="date" size="large" format="dd/MM/yyyy" ></DatePicker>
-                </div>   
-                <button class="button" @click="searchData">
-                  <b-icon icon="search">                      
-                  </b-icon>
-                </button>           
-              </b-field>
-            </div>
+            <b-field class="tile is-parent">
+              <div class="control">
+                <DatePicker v-model="date" type="date" size="large" format="dd/MM/yyyy"></DatePicker>
+              </div>   
+              <button class="button" @click="searchData">
+                <b-icon icon="search">
+                </b-icon>
+              </button>           
+            </b-field>
           </div>
           <div class="content">
             <b-table :data="dataTable" bordered striped detailed narrowed 
@@ -50,9 +48,9 @@
                       <button class="button is-danger is-outlined" @click="confirmRemoveRow(props.row)">
                         <b-icon icon="trash-o"></b-icon>
                       </button>
-                      <button class="button is-primary is-outlined" @click="print(props.row)">
+                      <a class="button is-primary is-outlined" :href="'/exportprint/'+props.row['.key']" target="_blank">
                         <b-icon icon="print"></b-icon>
-                      </button>                   
+                      </a>                   
                     </div>
                   </div>
                 </b-table-column>
