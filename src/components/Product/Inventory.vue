@@ -51,7 +51,7 @@
                   <p>{{ props.row.stock_number }}</p>
                 </b-table-column>
 
-                <b-table-column label="Số Lượng" width="130" centered>
+                <b-table-column label="Tồn" width="130" centered>
                   <strong class="tag is-info is-size-6">
                     {{ toNumber(props.row.quantity) }} {{ props.row.uom_wsale }} 
                     {{ props.row.remainder > 0 ? (toNumber(props.row.remainder) + ' ' + props.row.uom_retail) : '' }}
@@ -118,6 +118,10 @@
                         <p>
                           <strong>Đv bán lẻ</strong>
                           <br> {{ props.row.uom_retail }}
+                        </p>
+                        <p>
+                          <strong>Tỉ lệ</strong>
+                          <br> {{ props.row.uom_rate}}
                         </p>
                       </div>
                     </div>

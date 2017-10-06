@@ -23,12 +23,12 @@
                 <span>Tác vụ</span>
               </a>
               <div class="navbar-dropdown ">
-                <router-link class="navbar-item" to="/newimportsheet" replace>
+                <a class="navbar-item" href="/newimportsheet" target="_blank">
                   Nhập kho
-                </router-link>
-                <router-link class="navbar-item " to="/newexportsheet" replace>
+                </a>
+                <a class="navbar-item " href="/newexportsheet" target="_blank">
                   Xuất kho
-                </router-link>
+                </a>
                 <hr class="navbar-divider">
                 <a class="navbar-item ">
                   Thống kê
