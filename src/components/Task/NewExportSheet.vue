@@ -53,17 +53,18 @@
                 <b-table-column label="Sản Phẩm">
                   {{ props.row.product.product_name }}
                 </b-table-column>
-
+                <b-table-column label="Tồn" width="140">
+                  {{ props.row.product.quantity+ ' ' + props.row.product.uom_wsale }} 
+                  {{ props.row.product.remainder ? props.row.product.remainder + ' ' + props.row.product.uom_retail : '' }}
+                </b-table-column>
                 <b-table-column label="Xuất" width="140">
-                  {{(props.row.quan_w ? + props.row.quan_w + ' ' + props.row.uom_wsale : '')
-                    + ' ' 
-                    + (props.row.quan_r ? + props.row.quan_r + ' ' + props.row.uom_retail : '')}}
+                  {{(props.row.quan_w ? props.row.quan_w + ' ' + props.row.uom_wsale : '') }} 
+                  {{(props.row.quan_r ? props.row.quan_r + ' ' + props.row.uom_retail : '')}}
                 </b-table-column>
 
-                <b-table-column label="Tồn" width="140">
-                  {{(props.row.inv_w ? + props.row.inv_w + ' ' + props.row.uom_wsale : '')
-                    + ' ' 
-                    + (props.row.inv_r ? + props.row.inv_r + ' ' + props.row.uom_retail : '')}}
+                <b-table-column label="Còn" width="140">
+                  {{ props.row.inv_w + ' ' + props.row.uom_wsale }} 
+                  {{ (props.row.inv_r ? props.row.inv_r + ' ' + props.row.uom_retail : '')}}
                 </b-table-column>
 
                 <b-table-column label="Thành Tiền" width="160">
@@ -194,9 +195,7 @@
         })
       },
       grandTotal () {
-        return _.sumBy(this.entries, e => {
-          return e.total
-        })
+        return _.sumBy(this.entries, e => e.total)
       }
     },
     methods: {
@@ -237,7 +236,7 @@
             ind.inv_r -= this.quantity % this.selectedProduct.uom_rate
             if (ind.inv_r < 0) {
               ind.inv_w -= 1
-              ind.inv_r = -1
+              ind.inv_r += parseInt(this.selectedProduct.uom_rate)
             }
           }
           ind.total += this.quantity * this.unitPrice
@@ -260,7 +259,7 @@
             ind.inv_r -= this.quantity % this.selectedProduct.uom_rate
             if (ind.inv_r < 0) {
               ind.inv_w -= 1
-              ind.inv_r = -1
+              ind.inv_r += parseInt(this.selectedProduct.uom_rate)
             }
           }
           this.entries.push(ind)
@@ -271,7 +270,6 @@
       },
       deleteRow (obj) {
         this.entries = this.entries.filter(o => o.id !== obj.id)
-        this.grandTotal -= obj.total
       },
       newSheetValidate () {
         return new Promise((resolve, reject) => {
@@ -305,7 +303,8 @@
       importSheet () {
         return new Promise((resolve, reject) => {
           this.newSheetValidate().then((newSheet) => {
-            this.$firebaseRefs.exports.child(Date.now()).set(newSheet)
+            var key = Date.now()
+            this.$firebaseRefs.exports.child(key).set(newSheet)
             var tmp = this.exports[this.exports.length - 1]
             this.entries.forEach((e) => {
               var update = {
@@ -328,10 +327,12 @@
               this.$firebaseRefs.inventory.child(e.product['.key'] + '/remainder')
                 .set(update.inv_r)
               this.$firebaseRefs.inventory.child(e.product['.key'] + '/logs')
-                .child(Date.now()).set({
+                .child(key).set({
                   type: 'Export',
-                  quantity: update.inv_w,
-                  remainder: update.inv_r
+                  quan_r: update.quan_r,
+                  quan_w: update.quan_w,
+                  inv_w: update.inv_w,
+                  inv_r: update.inv_r
                 })
             })
             resolve()
