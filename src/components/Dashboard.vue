@@ -13,9 +13,9 @@
         </div>
       </div>
       <div class="column is-6">
-        <div class="notification is-danger">
+        <div class="notification is-danger is-size-5">
           <button class="delete" onclick="((this).parentNode.remove())"></button>
-          Có {{ data.length }} sản phẩm sắp hết hạn.
+          Có <b>{{ data.length }}</b> sản phẩm sắp hết hạn.
         </div>
         <div class="box">
           <article v-for="row in dataTable" :key="row.product_name" class="media">
