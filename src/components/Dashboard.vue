@@ -26,7 +26,7 @@
             <div class="media-content">
               <strong class="is-size-5">{{row.product_name}}</strong>
               <small>@{{row.category}}</small>
-              <small style="float:right;">{{lastUpdate(row.logs)}}</small>
+              <small style="float:right;">Cập nhật {{lastUpdate(row.logs)}}</small>
               <br>
               &nbsp;&nbsp;Còn <b>{{row.quantity}} {{row.uom_wsale}} 
                 {{row.remainder ? row.remainder + ' ' + row.uom_retail : ''}}</b>
