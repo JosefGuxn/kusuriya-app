@@ -68,7 +68,7 @@ import moment from 'moment'
 export default {
   data () {
     return {
-      exportsheet: null
+      exportsheet: []
     }
   },
   computed: {
