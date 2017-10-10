@@ -104,24 +104,24 @@
     },
     methods: {
       searchData () {
-        this.dataTable = this.exports.filter((option) => {
+        this.dataTable = this.imports.filter((option) => {
           return (option.date >= this.date)
         })
       },
-      confirmRemoveProduct (obj) {
+      confirmRemoveRow (obj) {
         this.$dialog.confirm({
           title: 'Xóa Dữ liệu',
-          message: `Bạn có chắc chắn muốn <b>xóa</b> Dữ liệu ${obj.product_name} không?`,
+          message: `Bạn có chắc chắn muốn <b>xóa</b> Dữ liệu không?`,
           confirmText: 'Xóa Dữ liệu',
           type: 'is-danger',
           hasIcon: true,
-          onConfirm: () => this.removeProduct(obj)
+          onConfirm: () => this.removeRow(obj)
         })
       },
-      removeProduct (product) {
-        this.$firebaseRefs.inventory.child(product['.key']).remove().then(() => {
+      removeRow (product) {
+        this.$firebaseRefs.imports.child(product['.key']).remove().then(() => {
           this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Xóa Dữ liệu thành công.' })
-          this.dataTable = this.inventory
+          this.dataTable = this.imports
         }).catch(error => {
           this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
           console.log(error)
