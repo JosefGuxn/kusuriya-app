@@ -280,7 +280,7 @@ export default {
     importSheet () {
       var newSheet = this.newSheetValidate()
       if (newSheet) {
-        this.$firebaseRefs.imports.child(newSheet.date).set(newSheet)
+        this.$firebaseRefs.imports.child(Date.now()).set(newSheet)
         var tmp = this.imports[this.imports.length - 1]
         this.entries.forEach((e) => {
           var update = {

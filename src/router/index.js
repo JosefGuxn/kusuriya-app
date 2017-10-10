@@ -7,6 +7,7 @@ import NewExportSheet from '@/components/Task/NewExportSheet'
 import Inventory from '@/components/Product/Inventory'
 import ProductList from '@/components/Product/ProductList'
 import InventoryPrint from '@/components/Print/InventoryPrint'
+import ImportPrint from '@/components/Print/ImportPrint'
 import ExportPrint from '@/components/Print/ExportPrint'
 import ImportReport from '@/components/Report/ImportReport'
 import ExportReport from '@/components/Report/ExportReport'
@@ -52,6 +53,10 @@ export default new Router({
     {
       path: '/exportprint/:key',
       component: ExportPrint
+    },
+    {
+      path: '/importprint/:key',
+      component: ImportPrint
     },
     {
       path: '/importreport',
