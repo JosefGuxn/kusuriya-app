@@ -6,20 +6,31 @@
 
 <script>
 // import _ from 'lodash'
+import moment from 'moment'
 import {db} from '@/firebase'
 export default {
   firebase: {
-    exports: db.ref('exports').orderByKey().startAt('1506995019000'),
-    products: db.ref('inventory')
+    inventory: db.ref('inventory'),
+    warning: db.ref('warning/exp')
   },
   methods: {
     help () {
-      this.products.forEach(p => {
-        if (p.remainder < 0) {
-          this.$firebaseRefs.products.child(p['.key']).child('quantity').set(parseInt(p.quantity) + 1)
-          this.$firebaseRefs.products.child(p['.key']).child('remainder').set(0)
-          console.log(p.product_name)
-        }
+      var tmp = moment().add(6, 'M')
+      this.inventory.filter(i => {
+        return moment(i.exp_date) <= tmp
+      }).sort((a, b) => {
+        return parseInt(a.exp_date) - parseInt(b.exp_date)
+      }).forEach(item => {
+        this.$firebaseRefs.warning.push({
+          product_name: item.product_name,
+          category: item.category,
+          quantity: item.quantity,
+          remainder: item.remainder || 0,
+          uom_wsale: item.uom_wsale,
+          uom_retail: item.uom_retail,
+          exp_date: item.exp_date,
+          logs: item.logs
+        })
       })
       console.log('You\'re welcome!')
     }

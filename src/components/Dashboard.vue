@@ -15,7 +15,7 @@
       <div class="column is-6">
         <div class="notification is-danger is-size-5">
           <button class="delete" onclick="((this).parentNode.remove())"></button>
-          Có <b>{{ data.length }}</b> sản phẩm sắp hết hạn.
+          Có <b>{{ warning.length }}</b> sản phẩm sắp hết hạn.
         </div>
         <div class="box">
           <article v-for="row in dataTable" :key="row.product_name" class="media">
@@ -36,7 +36,7 @@
           </article>
         </div>
         <b-pagination
-            :total="data.length"
+            :total="warning.length"
             :current.sync="currentPage"
             order="is-centered"
             size="is-medium"
@@ -55,17 +55,16 @@ import moment from 'moment'
 export default {
   data () {
     return {
-      data: [],
       currentPage: 1,
       perPage: 5
     }
   },
   firebase: {
-    inventory: db.ref('inventory')
+    warning: db.ref('warning/exp')
   },
   computed: {
     dataTable () {
-      return this.data.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
+      return this.warning.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
     }
   },
   methods: {
@@ -103,14 +102,6 @@ export default {
     if (!this.$store.getters.isLoggedIn) {
       this.$router.replace('/login')
     }
-  },
-  created () {
-    var tmp = moment().add(6, 'M')
-    this.data = this.inventory.filter(i => {
-      return moment(i.exp_date) <= tmp
-    }).sort((a, b) => {
-      return parseInt(a.exp_date) - parseInt(b.exp_date)
-    })
   }
 }
 </script>
