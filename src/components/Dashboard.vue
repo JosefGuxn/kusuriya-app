@@ -52,6 +52,9 @@
 <script>
 import { db } from '@/firebase'
 import moment from 'moment'
+
+const SIX_MONTHS = 6 * 30 * 24 * 60 * 60 * 1000
+
 export default {
   data () {
     return {
@@ -60,7 +63,7 @@ export default {
     }
   },
   firebase: {
-    warning: db.ref('warning/exp')
+    warning: db.ref('inventory').orderByChild('exp_date').endAt(Date.now() + SIX_MONTHS)
   },
   computed: {
     dataTable () {
