@@ -385,5 +385,14 @@ export default {
 </script>
 
 <style scoped>
-
+  .b-table {
+    margin-right: 5px;
+    margin-left: 5px;
+  }
+  .panel {
+    border: 1px solid black;
+  }
+  .tile.is-vertical > .tile.is-child:not(:last-child) {
+    margin-bottom: 0rem !important;
+  }
 </style>
