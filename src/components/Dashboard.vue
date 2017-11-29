@@ -64,7 +64,7 @@ export default {
   },
   computed: {
     dataTable () {
-      return this.warning.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
+      return this.warning.sort((a, b) => a.exp_date - b.exp_date).slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage)
     }
   },
   methods: {

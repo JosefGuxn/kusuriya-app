@@ -18,10 +18,8 @@ export default {
       var tmp = moment().add(6, 'M')
       this.inventory.filter(i => {
         return moment(i.exp_date) <= tmp
-      }).sort((a, b) => {
-        return parseInt(a.exp_date) - parseInt(b.exp_date)
       }).forEach(item => {
-        this.$firebaseRefs.warning.push({
+        this.$firebaseRefs.warning.child(item['.key']).set({
           product_name: item.product_name,
           category: item.category,
           quantity: item.quantity,
