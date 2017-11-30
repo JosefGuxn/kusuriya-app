@@ -6,29 +6,22 @@
 
 <script>
 // import _ from 'lodash'
-import moment from 'moment'
+// import moment from 'moment'
 import {db} from '@/firebase'
 export default {
   firebase: {
-    inventory: db.ref('inventory'),
-    warning: db.ref('warning/exp')
+    imports: db.ref('imports')
   },
   methods: {
     help () {
-      var tmp = moment().add(6, 'M')
-      this.inventory.filter(i => {
-        return moment(i.exp_date) <= tmp
-      }).forEach(item => {
-        this.$firebaseRefs.warning.child(item['.key']).set({
-          product_name: item.product_name,
-          category: item.category,
-          quantity: item.quantity,
-          remainder: item.remainder || 0,
-          uom_wsale: item.uom_wsale,
-          uom_retail: item.uom_retail,
-          exp_date: item.exp_date,
-          logs: item.logs
+      this.imports.forEach(i => {
+        // var sum = 0
+        Object.keys(i.entries).forEach(k => {
+          // sum += i.entries[k].quantity * i.entries[k].unit_price
+          this.$firebaseRefs.imports.child(i['.key'] + '/entries/' + k)
+            .child('product').set({product_name: i.entries[k].product_name})
         })
+        // this.$firebaseRefs.imports.child(i['.key']).child('grand_total').set(sum)
       })
       console.log('You\'re welcome!')
     }
