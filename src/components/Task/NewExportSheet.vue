@@ -242,7 +242,6 @@
           ind.total += this.quantity * this.unitPrice
         } else {
           ind = {
-            id: _.random(1111, 9999),
             product: this.selectedProduct,
             quan_w: this.isWSale ? parseInt(this.quantity) : 0,
             quan_r: this.isWSale ? 0 : parseInt(this.quantity),
@@ -269,7 +268,7 @@
         window.scrollTo(0, 0)
       },
       deleteRow (obj) {
-        this.entries = this.entries.filter(o => o.id !== obj.id)
+        this.entries = this.entries.filter(o => o !== obj)
       },
       newSheetValidate () {
         return new Promise((resolve, reject) => {

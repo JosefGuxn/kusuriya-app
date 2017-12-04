@@ -18,18 +18,18 @@
           Có <b>{{ warning.length }}</b> sản phẩm sắp hết hạn.
         </div>
         <div class="box">
-          <article v-for="row in dataTable" :key="row.product_name" class="media">
+          <article v-for="row in dataTable" :key="row.product.name" class="media">
             <div class="media-left">
               <figure class="image is-16x32">
               </figure>
             </div>
             <div class="media-content">
-              <strong class="is-size-5">{{row.product_name}}</strong>
-              <small>@{{row.category}}</small>
+              <strong class="is-size-5">{{row.product.name}}</strong>
+              <small>@{{row.product.category}}</small>
               <small style="float:right;">Cập nhật {{lastUpdate(row.logs)}}</small>
               <br>
-              &nbsp;&nbsp;Còn <b>{{row.quantity}} {{row.uom_wsale}} 
-                {{row.remainder ? row.remainder + ' ' + row.uom_retail : ''}}</b>
+              &nbsp;&nbsp;Còn <b>{{row.wsale_qty}} {{row.wsale_unit}} 
+                {{row.retail_qty ? row.retail_qty + ' ' + row.retail_unit : ''}}</b>
               <br>
               &nbsp;&nbsp;Hạn dùng đến <b>{{moment(row.exp_date)}}</b>
             </div>
@@ -81,6 +81,7 @@ export default {
       return new Intl.NumberFormat('vi-VN').format(number)
     },
     lastUpdate (logs) {
+      if (!logs) return null
       var tmp = Object.keys(logs)
       moment.defineLocale('vn', {
         relativeTime: {

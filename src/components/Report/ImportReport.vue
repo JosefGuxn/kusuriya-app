@@ -40,6 +40,12 @@
                   {{ props.row.supplier }}
                 </b-table-column>
 
+                <b-table-column label="Tổng Tiền Mua" centered>
+                  <strong class="tag is-dark is-size-6">
+                    {{ toCurrency(props.row.grand_total) }}
+                  </strong>
+                </b-table-column>
+
                 <b-table-column width="100">
                   <div class="tile">
                     <div class="tile is-child">
@@ -60,7 +66,7 @@
                     <b-table :data="Object.values(props.row.entries)" bordered striped narrowed>
                       <template scope="props">
                         <b-table-column label="Sản Phẩm">
-                          <p>{{ props.row.product_name }}</p>
+                          <p>{{ props.row.product.product_name }}</p>
                         </b-table-column>
                         <b-table-column label="Số Lô">
                           {{ props.row.stock_number }}
@@ -119,6 +125,7 @@
         })
       },
       removeRow (product) {
+        // TODO recover data
         this.$firebaseRefs.imports.child(product['.key']).remove().then(() => {
           this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Xóa Dữ liệu thành công.' })
           this.dataTable = this.imports

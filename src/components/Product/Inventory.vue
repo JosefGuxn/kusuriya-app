@@ -38,12 +38,12 @@
               </template>
               <template scope="props">
                 <b-table-column field="category" label="Danh Mục" width="200" sortable>
-                  <p>{{ props.row.category }}</p>
+                  <p>{{ props.row.product.category }}</p>
                 </b-table-column>
 
                 <b-table-column label="Sản Phẩm">
                   <strong class="is-size-5">
-                    {{ props.row.product_name }}
+                    {{ props.row.product.name }}
                   </strong>
                 </b-table-column>
 
@@ -53,8 +53,8 @@
 
                 <b-table-column label="Tồn" width="130" centered>
                   <strong class="tag is-info is-size-6">
-                    {{ toNumber(props.row.quantity) }} {{ props.row.uom_wsale }} 
-                    {{ props.row.remainder > 0 ? (toNumber(props.row.remainder) + ' ' + props.row.uom_retail) : '' }}
+                    {{ toNumber(props.row.wsale_qty) }} {{ props.row.product.wsale_unit }} 
+                    {{ props.row.retail_qty > 0 ? (toNumber(props.row.retail_qty) + ' ' + props.row.product.retail_unit) : '' }}
                   </strong>
                 </b-table-column>
 
@@ -99,29 +99,29 @@
                       <div class="column">
                         <p>
                           <strong>Nhóm dược</strong>
-                          <br> {{ props.row.class }}
+                          <br> {{ props.row.product.class }}
                         </p>
                         <p>
                           <strong>Hoạt chất</strong>
-                          <br> {{ props.row.chemical }}
+                          <br> {{ props.row.product.chemical }}
                         </p>
                         <p>
-                          <strong>Giá mua</strong>
-                          <br> {{ toCurrency(props.row.unit_price) }}
+                          <strong>Giá mua gần nhất</strong>
+                          <br> {{ toCurrency(props.row.wsale_cost) }}
                         </p>
                       </div>
                       <div class="column">
                         <p>
                           <strong>Đv bán sỉ</strong>
-                          <br> {{ props.row.uom_wsale }}
+                          <br> {{ props.row.product.wsale_unit }}
                         </p>
                         <p>
                           <strong>Đv bán lẻ</strong>
-                          <br> {{ props.row.uom_retail }}
+                          <br> {{ props.row.product.retail_unit }}
                         </p>
                         <p>
                           <strong>Tỉ lệ</strong>
-                          <br> {{ props.row.uom_rate}}
+                          <br> {{ props.row.product.unit_ratio}}
                         </p>
                       </div>
                     </div>
@@ -136,7 +136,7 @@
         <b-panel has-custom-template>
           <div class="tile" slot="header">
             <strong class="tile is-child">
-              {{ currentEditProduct.product_name }}
+              {{ current.product.name }}
             </strong>
             <div class="tile is-child is-1 has-text-right">
               <button class="button" @click="isEditMode = false">
@@ -151,11 +151,11 @@
             </div>         
             <div class="tile is-child">
               <strong>Số lượng Sỉ</strong>
-              <b-input v-model="quantity" type="number"></b-input>
+              <b-input v-model="wSaleQty" type="number"></b-input>
             </div>
             <div class="tile is-child">
               <strong>Số lượng Lẻ</strong>
-              <b-input v-model="remainder" type="number"></b-input>
+              <b-input v-model="retailQty" type="number"></b-input>
             </div>
             <div class="tile is-child">
               <div class="tile is-vertical">
@@ -168,10 +168,6 @@
               </div>
             </div>
             <div class="tile is-child">
-              <strong>Giá mua</strong>
-              <money v-model="unitPrice" class="input"></money>
-            </div> 
-            <div class="tile is-child">
               <strong>Giá bán sỉ</strong>
               <money v-model="wSalePrice" class="input"></money>
             </div>      
@@ -183,7 +179,7 @@
           <div class="panel-block">
             <b-field>
               <div class="control">
-                <button class="button is-dark" @click="editProduct">Sửa</button>
+                <button class="button is-dark" @click="updateInventory">Cập nhật</button>
               </div>
             </b-field>
           </div>
@@ -202,12 +198,11 @@
         isEditMode: false,
         searchText: '',
         dataTable: [],
-        currentEditProduct: null,
+        current: null,
         stockNumber: null,
         expDate: null,
-        quantity: null,
-        remainder: null,
-        unitPrice: null,
+        wSaleQty: null,
+        retailQty: null,
         wSalePrice: null,
         retailPrice: null
       }
@@ -215,19 +210,13 @@
     firebase: {
       inventory: db.ref('inventory')
     },
-    computed: {
-    },
     methods: {
       searchData () {
         this.dataTable = this.inventory.filter((option) => {
-          return (option.product_name
+          return (option.product) && (option.product.name
             .toString()
             .toLowerCase()
-            .indexOf(this.searchText.toLowerCase()) >= 0) ||
-            (option.chemical
-              .toString()
-              .toLowerCase()
-              .indexOf(this.searchText.toLowerCase()) >= 0)
+            .indexOf(this.searchText.toLowerCase()) >= 0)
         })
       },
       clearSearch () {
@@ -237,7 +226,7 @@
       confirmRemoveProduct (obj) {
         this.$dialog.confirm({
           title: 'Xóa Dữ liệu',
-          message: `Bạn có chắc chắn muốn <b>xóa</b> Dữ liệu ${obj.product_name} không?`,
+          message: `Xác nhận <b>XÓA</b> Dữ liệu ${obj.product.name}?`,
           confirmText: 'Xóa Dữ liệu',
           type: 'is-danger',
           hasIcon: true,
@@ -247,7 +236,7 @@
       removeProduct (product) {
         this.$firebaseRefs.inventory.child(product['.key']).remove().then(() => {
           this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Xóa Dữ liệu thành công.' })
-          this.dataTable = this.inventory
+          window.location.reload(true)
         }).catch(error => {
           this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
           console.log(error)
@@ -255,39 +244,35 @@
       },
       editRow (obj) {
         this.isEditMode = true
-        this.currentEditProduct = obj
-        this.quantity = obj.quantity
-        this.remainder = obj.remainder
+        this.current = obj
+        this.wSaleQty = obj.wsale_qty
+        this.retailQty = obj.retail_qty
         this.stockNumber = obj.stock_number
-        this.expDate = obj.exp_date
-        this.unitPrice = obj.unit_price
+        this.expDate = new Date(obj.exp_date)
         this.wSalePrice = obj.wsale_price
         this.retailPrice = obj.retail_price
       },
-      editProduct () {
+      updateInventory () {
         var update = {
-          product_name: this.currentEditProduct.product_name,
-          category: this.currentEditProduct.category,
-          chemical: this.currentEditProduct.chemical,
-          class: this.currentEditProduct.class,
-          uom_wsale: this.currentEditProduct.uom_wsale,
-          uom_retail: this.currentEditProduct.uom_retail,
-          uom_rate: this.currentEditProduct.uom_rate,
-          remainder: this.remainder,
-          unit_price: this.unitPrice,
-          logs: this.currentEditProduct.logs,
-          quantity: this.quantity,
+          product: this.current.product,
+          logs: this.current.logs,
+          wsale_cost: this.current.wsale_cost,
+          wsale_qty: this.wSaleQty,
+          retail_qty: this.retailQty,
           stock_number: this.stockNumber,
-          exp_date: this.expDate,
+          exp_date: this.expDate.getTime(),
           wsale_price: this.wSalePrice,
           retail_price: this.retailPrice
         }
+        if (!update.logs) update.logs = {}
         update.logs[Date.now()] = {
           type: 'Edit',
-          quantity: this.quantity,
-          remainder: this.remainder
+          o_w_qty: this.current.wsale_qty,
+          o_r_qty: this.current.retail_qty,
+          w_qty: this.wSaleQty,
+          r_qty: this.retailQty
         }
-        this.$firebaseRefs.inventory.child(this.currentEditProduct['.key']).set(update).then(() => {
+        this.$firebaseRefs.inventory.child(this.current['.key']).set(update).then(() => {
           this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Dữ liệu thành công.' })
           this.dataTable = this.inventory
           this.isEditMode = false
@@ -316,5 +301,14 @@
 </script>
 
 <style scoped>
-
+  .b-table {
+    margin-right: 5px;
+    margin-left: 5px;
+  }
+  .panel {
+    border: 1px solid black;
+  }
+  .tile.is-vertical > .tile.is-child:not(:last-child) {
+    margin-bottom: 0rem !important;
+  }
 </style>

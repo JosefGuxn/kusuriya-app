@@ -4,7 +4,11 @@
       <div class="tile is-child hide-content">
         <button class="button is-primary" @click="print">
           <b-icon icon="print"></b-icon>
-          <span>Print</span>
+          <span>In phiếu</span>
+        </button>
+        <button class="button is-primary" @click="newSheet">
+          <b-icon icon="file-o"></b-icon>
+          <span>Phiếu mới</span>
         </button>
       </div>
       <div class="tile is-child">
@@ -45,19 +49,19 @@
         <b-table :data="dataTable" bordered striped narrowed>
           <template scope="props">
             <b-table-column label="Sản Phẩm">
-              <p>{{ props.row.product_name }}</p>
+              <p>{{ props.row.product.name }}</p>
             </b-table-column>
             <b-table-column label="Số Lô">
               {{ props.row.stock_number }}
             </b-table-column>
             <b-table-column label="Số Lượng Nhập" width="170">
-              {{ props.row.quantity }}
+              {{ props.row.wsale_qty }}
             </b-table-column>          
             <b-table-column label="Giá Mua">
-              {{ toCurrency(props.row.unit_price) }}
+              {{ toCurrency(props.row.wsale_cost) }}
             </b-table-column>
             <b-table-column label="Thành Tiền">
-              <p>{{ toCurrency(props.row.quantity * props.row.unit_price) }}</p>
+              <p>{{ toCurrency(props.row.wsale_qty * props.row.wsale_cost) }}</p>
             </b-table-column>
           </template>
         </b-table>
@@ -83,6 +87,9 @@ export default {
   methods: {
     print () {
       window.print()
+    },
+    newSheet () {
+      this.$router.replace('/newimportsheet')
     },
     moment (time) {
       return moment(time).format('DD-MM-YYYY')
