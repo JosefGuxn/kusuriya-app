@@ -228,7 +228,7 @@ export default {
       chemicalValue: '',
       searchText: '',
       dataTable: [],
-      currentEditProduct: null
+      current: null
     }
   },
   firebase: {
@@ -391,10 +391,10 @@ export default {
       this.uomWSale = obj.wsale_unit
       this.uomRetail = obj.retail_unit
       this.unitRatio = obj.unit_ratio
-      this.currentEditProduct = obj
+      this.current = obj
     },
     editProduct () {
-      if (this.currentEditProduct) {
+      if (this.current) {
         var update = {
           category: this.category || this.categories[0].value,
           name: this.productName.charAt(0).toUpperCase() + this.productName.slice(1),
@@ -402,12 +402,15 @@ export default {
           class: this.dClass || this.classes[13],
           wsale_unit: this.uomWSale || this.uoms[0].value,
           retail_unit: this.uomRetail || this.uoms[0].value,
-          unit_ratio: this.unitRatio,
-          last_update: Date.now()
+          unit_ratio: this.unitRatio
         }
-        // TODO update inventory
+        db.ref('inventory').child(this.current['.key']).once('value').then((snapshot) => {
+          if (snapshot.exists()) {
+            db.ref('inventory').child(this.current['.key']).child('product').set(update)
+          }
+        })
         this.$firebaseRefs.products
-          .child(this.currentEditProduct['.key']).set(update).then(() => {
+          .child(this.current['.key']).set(update).then(() => {
             this.$store.dispatch('pushNotif', { type: 'is-success', message: `Cập nhật Sản phẩm ${update.name} thành công.` })
             this.isEditMode = false
             this.resetForm()
