@@ -21,8 +21,8 @@ import moment from 'moment'
 
 Vue.mixin({
   methods: {
-    moment (time) {
-      return moment(time).format('DD/MM/YYYY')
+    moment (time, str = 'DD/MM/YYYY') {
+      return moment(time).format(str)
     },
     toCurrency (number) {
       return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
