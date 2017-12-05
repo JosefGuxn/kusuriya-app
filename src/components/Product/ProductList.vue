@@ -24,11 +24,6 @@
                   <b-icon icon="plus"></b-icon>
                   <span>Thêm Sản Phẩm</span>
                 </button>
-                <button class="button is-primary"
-                @click="test">
-                  <b-icon icon="print"></b-icon>
-                  <span>Print</span>
-                </button>
               </div>
             </div>
           </div>          
@@ -44,26 +39,22 @@
                    {{ props.row.category }}                 
                 </b-table-column>
 
-                <b-table-column field="product_name" label="Sản Phẩm" sortable>
+                <b-table-column field="name" label="Sản Phẩm" sortable>
                   <strong>
-                    {{ props.row.product_name }}
+                    {{ props.row.name }}
                   </strong>
                 </b-table-column>
 
-                <b-table-column meta="Số Lô"  label="Số Lô" width="150" centered>
-                  {{ props.row.stock_number }}
+                <b-table-column meta="Đơn Vị Bán Sỉ"  label="ĐvBS" width="150" centered>
+                  {{ props.row.wsale_unit }}
                 </b-table-column>
 
-                <b-table-column meta="Đơn Vị Bán Sỉ"  label="ĐvBS" width="110" centered>
-                  {{ props.row.uom_wsale }}
-                </b-table-column>
-
-                <b-table-column meta="Đơn Vị Bán Lẻ"  label="ĐvBL" width="110" centered>
-                  {{ props.row.uom_retail }}
+                <b-table-column meta="Đơn Vị Bán Lẻ"  label="ĐvBL" width="150" centered>
+                  {{ props.row.retail_unit }}
                 </b-table-column>
 
                 <b-table-column meta="Tỉ Lệ Đv Bán Sỉ/Đv Bán Lẻ"  label="ĐvBS/ĐvBL" width="140" centered>
-                  {{ props.row.uom_rate }}
+                  {{ props.row.unit_ratio }}
                 </b-table-column>
 
                 <b-table-column width="100">
@@ -94,6 +85,9 @@
                         <strong>Hoạt chất</strong>
                         <br>                      
                         {{ props.row.chemical }}   
+                      </p>
+                      <p>                     
+                        <small>{{ props.row['.key'] }} </small>  
                       </p>
                     </div>
                   </div>
@@ -168,10 +162,6 @@
               </b-field>
             </div>
             <div class="tile is-child">
-              <strong>Số lô</strong>
-              <b-input v-model="stockNumber"></b-input>
-            </div>
-            <div class="tile is-child">
               <strong>Đơn vị bán Sỉ</strong>
               <b-field grouped>
                 <b-select placeholder="Chọn đơn vị" v-model="uomWSale" expanded>
@@ -198,18 +188,14 @@
             </div>
             <div class="tile is-child">
               <strong>Tỉ lệ Đv bán Sỉ/Đv bán Lẻ</strong>
-              <b-input v-model="uomRate" type="number"></b-input>
+              <b-input v-model="unitRatio" type="number"></b-input>
             </div>
           </div>
           <div class="panel-block">
             <b-field v-if="isAddMode" grouped>
               <div class="control">
-                <button class="button is-success is-fullwidth" @click="addProductAndClose">Cập nhật</button>
-              </div>
-              <div class="control">
-                <button class="button is-info is-fullwidth"
-                @click="addProductAndReset">Cập nhật & Tiếp tục</button>
-              </div>          
+                <button class="button is-success is-fullwidth" @click="addProduct">Cập nhật</button>
+              </div>        
             </b-field>
             <b-field v-if="isEditMode">
               <div class="control">
@@ -230,26 +216,19 @@ import _ from 'lodash'
 export default {
   data () {
     return {
-      formatter: (date) => date.toLocaleDateString('vi-VN'),
       isAddMode: false,
       isEditMode: false,
       category: null,
       productName: '',
       chemical: null,
       dClass: null,
-      stockNumber: null,
       uomWSale: null,
       uomRetail: null,
-      uomRate: 0,
-      formProps: {
-        info: '',
-        action: ''
-      },
-      modalValue: '',
+      unitRatio: 1,
       chemicalValue: '',
       searchText: '',
       dataTable: [],
-      currentEditProduct: null
+      current: null
     }
   },
   firebase: {
@@ -270,26 +249,31 @@ export default {
     }
   },
   methods: {
-    newProductValadate () {
+    newProductValidate () {
       if (this.productName === '') {
         return false
       }
       return true
     },
     addProduct () {
+      if (!this.newProductValidate()) {
+        return null
+      }
       var newProduct = {
         category: this.category || this.categories[0].value,
-        product_name: this.productName.charAt(0).toUpperCase() + this.productName.slice(1),
+        name: this.productName.charAt(0).toUpperCase() + this.productName.slice(1),
         chemical: this.chemical ? this.chemical.value : '',
         class: this.dClass || this.classes[13],
-        stock_number: this.stockNumber || '',
-        uom_wsale: this.uomWSale || this.uoms[0].value,
-        uom_retail: this.uomRetail || this.uoms[0].value,
-        uom_rate: this.uomRate,
+        wsale_unit: this.uomWSale || this.uoms[0].value,
+        retail_unit: this.uomRetail || this.uoms[0].value,
+        unit_ratio: this.unitRatio,
         last_update: Date.now()
       }
       this.$firebaseRefs.products.push(newProduct).then(() => {
         this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Sản phẩm thành công.' })
+        this.resetForm()
+        this.$refs.inputProductName.focus()
+        window.scrollTo(0, 0)
       }).catch(error => {
         this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
         console.log(error)
@@ -300,29 +284,9 @@ export default {
       this.chemical = null
       this.chemicalValue = ''
       this.dClass = null
-      this.stockNumber = null
       this.uomWSale = null
       this.uomRetail = null
-      this.uomRate = 0
-    },
-    addProductAndClose () {
-      if (!this.newProductValadate()) {
-        return null
-      }
-
-      this.addProduct()
-      this.resetForm()
-      this.isAddMode = false
-    },
-    addProductAndReset () {
-      if (!this.newProductValadate()) {
-        return null
-      }
-
-      this.addProduct()
-      this.resetForm()
-      this.$refs.inputProductName.focus()
-      window.scrollTo(0, 0)
+      this.unitRatio = 1
     },
     addCategory () {
       this.$dialog.prompt({
@@ -359,7 +323,7 @@ export default {
         title: `Nhóm Dược Mới`,
         confirmText: 'OK',
         onConfirm: (value) => this.$firebaseRefs.classes.push({
-          value: value,
+          value: value.toUpperCase(),
           last_update: Date.now()
         }).then(() => {
           this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Nhóm dược thành công.' })
@@ -374,10 +338,10 @@ export default {
         title: `Đơn Vị Tính Mới`,
         confirmText: 'OK',
         onConfirm: (value) => this.$firebaseRefs.uoms.push({
-          value: value,
+          value: value.toUpperCase(),
           last_update: Date.now()
         }).then(() => {
-          this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Đơn vị tính thành công.' })
+          this.$store.dispatch('pushNotif', { type: 'is-success', message: `Thêm Đơn vị ${value.toUpperCase()} thành công.` })
         }).catch(error => {
           this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
           console.log(error)
@@ -387,7 +351,7 @@ export default {
     confirmRemoveProduct (obj) {
       this.$dialog.confirm({
         title: 'Xóa Sản phẩm',
-        message: `Bạn có chắc chắn muốn <b>xóa</b> sản phẩm ${obj.product_name} không?`,
+        message: `Xác nhận <b>XÓA</b> sản phẩm ${obj.name}?`,
         confirmText: 'Xóa Sản phẩm',
         type: 'is-danger',
         hasIcon: true,
@@ -396,7 +360,7 @@ export default {
     },
     removeProduct (product) {
       this.$firebaseRefs.products.child(product['.key']).remove().then(() => {
-        this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Xóa Sản phẩm thành công.' })
+        this.$store.dispatch('pushNotif', { type: 'is-success', message: `Xóa Sản phẩm ${product.name} thành công.` })
         this.dataTable = this.products
       }).catch(error => {
         this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
@@ -405,14 +369,10 @@ export default {
     },
     searchData () {
       this.dataTable = this.products.filter((option) => {
-        return (option.product_name
+        return (option.name
           .toString()
           .toLowerCase()
-          .indexOf(this.searchText.toLowerCase()) >= 0) ||
-          (option.chemical
-            .toString()
-            .toLowerCase()
-            .indexOf(this.searchText.toLowerCase()) >= 0)
+          .indexOf(this.searchText.toLowerCase()) >= 0)
       })
     },
     clearSearch () {
@@ -424,32 +384,34 @@ export default {
       this.isEditMode = true
       this.resetForm()
       this.category = obj.category
-      this.productName = obj.product_name
+      this.productName = obj.name
       this.chemicalValue = obj.chemical
       this.chemical = _.find(this.chemicals, { value: obj.chemical })
       this.dClass = obj.class
-      this.stockNumber = obj.stock_number
-      this.uomWSale = obj.uom_wsale
-      this.uomRetail = obj.uom_retail
-      this.uomRate = obj.uom_rate
-      this.currentEditProduct = obj
+      this.uomWSale = obj.wsale_unit
+      this.uomRetail = obj.retail_unit
+      this.unitRatio = obj.unit_ratio
+      this.current = obj
     },
     editProduct () {
-      if (this.currentEditProduct) {
+      if (this.current) {
         var update = {
           category: this.category || this.categories[0].value,
-          product_name: this.productName.charAt(0).toUpperCase() + this.productName.slice(1),
+          name: this.productName.charAt(0).toUpperCase() + this.productName.slice(1),
           chemical: this.chemical ? this.chemical.value : '',
           class: this.dClass || this.classes[13],
-          stock_number: this.stockNumber || '',
-          uom_wsale: this.uomWSale || this.uoms[0].value,
-          uom_retail: this.uomRetail || this.uoms[0].value,
-          uom_rate: this.uomRate,
-          last_update: Date.now()
+          wsale_unit: this.uomWSale || this.uoms[0].value,
+          retail_unit: this.uomRetail || this.uoms[0].value,
+          unit_ratio: this.unitRatio
         }
+        db.ref('inventory').child(this.current['.key']).once('value').then((snapshot) => {
+          if (snapshot.exists()) {
+            db.ref('inventory').child(this.current['.key']).child('product').set(update)
+          }
+        })
         this.$firebaseRefs.products
-          .child(this.currentEditProduct['.key']).set(update).then(() => {
-            this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Sửa Sản phẩm thành công.' })
+          .child(this.current['.key']).set(update).then(() => {
+            this.$store.dispatch('pushNotif', { type: 'is-success', message: `Cập nhật Sản phẩm ${update.name} thành công.` })
             this.isEditMode = false
             this.resetForm()
             this.dataTable = this.products
@@ -458,9 +420,6 @@ export default {
             console.log(error)
           })
       }
-    },
-    test () {
-      console.log(this.tableData[0].product_name)
     }
   },
   created () {
@@ -473,5 +432,14 @@ export default {
 </script>
 
 <style scoped>
-
+  .b-table {
+    margin-right: 5px;
+    margin-left: 5px;
+  }
+  .panel {
+    border: 1px solid black;
+  }
+  .tile.is-vertical > .tile.is-child:not(:last-child) {
+    margin-bottom: 0rem !important;
+  }
 </style>

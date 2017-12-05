@@ -5,15 +5,12 @@
         <b-panel has-custom-template>
           <div class="is-size-3 tile" slot="header">
             <strong class="tile is-child has-text-primary">
-              Phiếu nhập kho
+              Phiếu NHẬP
             </strong>
             <div class="tile is-child is-4 has-text-right">
-              <button class="button is-primary" @click="importSheetAndClose">
+              <button class="button is-primary" @click="saveSheet">
                 <b-icon icon="floppy-o"></b-icon>
                 <span>Lưu</span>
-              </button>
-              <button class="button is-primary" @click="importSheetAndReload">
-                <span>Lưu & Tạo mới</span>
               </button>
             </div>
           </div>
@@ -52,14 +49,14 @@
               <div class="tile is-child is-6">
                 <b-field>
                   <div class="control">
-                    <b-input v-model="note" type="textarea"></b-input>
+                    <b-input v-model="note"></b-input>
                   </div>
                 </b-field>
               </div>
             </div>
           </div>
           <div class="content" style="margin-top: 20px">
-            <b-table :data="entries" narrowed bordered>
+            <b-table :data="entries" narrowed bordered :row-class="(row, index) => row.wsale_qty < 0 ? 'is-warning' : ''">
               <template slot="header" scope="props">
                 <strong class="is-size-5">
                   {{ props.column.label }}
@@ -67,7 +64,7 @@
               </template>
               <template scope="props">
                 <b-table-column label="Sản Phẩm">
-                  {{ props.row.product.product_name }}
+                  {{ props.row.product.name }}
                 </b-table-column>
 
                 <b-table-column label="Số Lô" width="110">
@@ -75,7 +72,7 @@
                 </b-table-column>
 
                 <b-table-column label="Số Lượng Nhập" width="140">
-                  {{ toNumber(props.row.quantity) }}
+                  {{ toNumber(props.row.wsale_qty) }}
                 </b-table-column>
 
                 <b-table-column label="Hạn Dùng" width="140">
@@ -83,7 +80,7 @@
                 </b-table-column>
 
                 <b-table-column label="Giá Mua" width="120">
-                  {{ toCurrency(props.row.unit_price) }}
+                  {{ toCurrency(props.row.wsale_cost) }}
                 </b-table-column>
 
                 <b-table-column label="Giá Bán Sỉ" width="140">
@@ -109,20 +106,28 @@
               </template>
             </b-table>
           </div>
+          <div class="panel-block">
+            <div class="tile">
+              <strong class="tile is-child is-3 is-size-5">Tổng tiền mua</strong>
+              <div class="tile is-child is-6">
+                <strong>{{ toCurrency(grandTotal) }}</strong>
+              </div>
+            </div>
+          </div>
         </b-panel>
       </div>
       <div class="column is-4">
         <b-panel has-custom-template>
           <div class="tile is-size-3" slot="header">
             <strong class="tile is-child">
-              Thêm Dữ liệu
+              Nhập Dữ liệu
             </strong>
           </div>
           <div class="panel-block tile is-vertical">
             <div class="tile is-child">
               <strong>Sản phẩm</strong>
               <b-field :type="seletedProduct === null ? 'is-danger':''">
-                <b-autocomplete ref="inputProduct" v-model="productValue" :data="filteredProducts" @select="selectProduct" field="product_name" expanded keep-first>
+                <b-autocomplete ref="inputProduct" v-model="productName" :data="filteredProducts" @select="selectProduct" field="name" expanded keep-first>
                 </b-autocomplete>
               </b-field>
             </div>
@@ -146,7 +151,7 @@
             </div>
             <div class="tile is-child">
               <strong>Giá mua</strong>
-              <money v-model="unitPrice" class="input"></money>
+              <money v-model="wsaleCost" class="input"></money>
             </div>
             <div class="tile is-child">
               <strong>Giá bán sỉ</strong>
@@ -157,11 +162,11 @@
               <money v-model="retailPrice" class="input"></money>
             </div>
             <div class="tile is-child">
-              <strong>Lợi nhuận {{ profit }}%</strong>             
+              <strong>Lợi nhuận {{ profit }}%</strong>
             </div>
           </div>
           <div class="panel-block">
-            <button class="button is-success is-fullwidth" @click="addRow">
+            <button class="button is-success is-fullwidth is-outlined" @click="addRow">
               <b-icon icon="plus"></b-icon>
               <strong>Thêm</strong>
             </button>
@@ -174,7 +179,6 @@
 
 <script>
 import { db } from '@/firebase'
-import moment from 'moment'
 import _ from 'lodash'
 export default {
   data () {
@@ -187,12 +191,12 @@ export default {
       supplier: null,
       sheet_date: new Date(),
       note: null,
-      productValue: '',
+      productName: '',
       seletedProduct: null,
       quantity: 0,
       stockNumber: '',
       expDate: new Date(),
-      unitPrice: 0,
+      wsaleCost: 0,
       wSalePrice: 0,
       retailPrice: 0
     }
@@ -206,17 +210,20 @@ export default {
   computed: {
     filteredProducts () {
       return this.products.filter((option) => {
-        return option.product_name
+        return option.name
           .toString()
           .toLowerCase()
-          .indexOf(this.productValue.toLowerCase()) >= 0
+          .indexOf(this.productName.toLowerCase()) >= 0
       })
     },
     profit () {
-      if (this.unitPrice !== 0) {
-        return Math.round(((this.wSalePrice - this.unitPrice) / this.unitPrice) * 100) / 100
+      if (this.wsaleCost !== 0) {
+        return Math.round(((this.wSalePrice - this.wsaleCost) / this.wsaleCost) * 100) / 100
       }
       return 0
+    },
+    grandTotal () {
+      return _.sumBy(this.entries, e => e.wsale_qty * e.wsale_cost)
     }
   },
   methods: {
@@ -229,26 +236,25 @@ export default {
       }
     },
     resetForm () {
-      this.productValue = ''
+      this.productName = ''
       this.seletedProduct = null
-      this.stockNumber = null
+      this.stockNumber = ''
       this.quantity = 0
       this.expDate = new Date()
-      this.unitPrice = 0
+      this.wsaleCost = 0
       this.wSalePrice = 0
       this.retailPrice = 0
     },
     newRowVadilate () {
       if (this.seletedProduct) {
         return {
-          id: _.random(1111, 9999),
           product: this.seletedProduct,
           stock_number: this.stockNumber,
-          quantity: this.quantity,
-          exp_date: this.expDate,
-          unit_price: this.unitPrice,
-          wsale_price: this.wSalePrice,
-          retail_price: this.retailPrice
+          wsale_qty: parseInt(this.quantity),
+          exp_date: this.expDate.getTime(),
+          wsale_cost: parseInt(this.wsaleCost),
+          wsale_price: parseInt(this.wSalePrice),
+          retail_price: parseInt(this.retailPrice)
         }
       }
       return null
@@ -261,11 +267,11 @@ export default {
         this.$refs.inputProduct.focus()
         window.scrollTo(0, 0)
       } else {
-        this.$store.dispatch('pushNotif', { message: 'Chưa chọn Sản phẩm.', type: 'is-warning' })
+        this.$store.dispatch('pushNotif', { message: 'Xin chọn Sản phẩm.', type: 'is-warning' })
       }
     },
     deleteRow (obj) {
-      this.entries = this.entries.filter(o => o.id !== obj.id)
+      this.entries = this.entries.filter(o => o !== obj)
     },
     newSheetValidate () {
       var condition = this.supplier && this.entries.length !== 0
@@ -273,91 +279,58 @@ export default {
         return {
           supplier: this.supplier,
           date: this.sheet_date.getTime(),
-          note: this.note
+          note: this.note,
+          grand_total: this.grandTotal
         }
       }
+      return null
     },
-    importSheet () {
-      var newSheet = this.newSheetValidate()
-      if (newSheet) {
-        this.$firebaseRefs.imports.child(Date.now()).set(newSheet)
-        var tmp = this.imports[this.imports.length - 1]
+    saveSheet () {
+      try {
+        var newSheet = this.newSheetValidate()
+        if (!newSheet) throw new Error('thiếu dữ liệu.')
+        var sheetKey = Date.now()
+        this.$firebaseRefs.imports.child(sheetKey).set(newSheet)
         this.entries.forEach((e) => {
-          var update = {
-            product_name: e.product.product_name,
-            stock_number: e.stock_number,
-            quantity: parseInt(e.quantity),
-            exp_date: e.exp_date.getTime(),
-            unit_price: parseInt(e.unit_price),
-            wsale_price: parseInt(e.wsale_price),
-            retail_price: parseInt(e.retail_price)
+          var productKey = e.product['.key']
+          delete e.product['.key']
+          this.$firebaseRefs.imports.child(sheetKey).child('entries')
+            .child(productKey).set(e)
+
+          var ind = _.find(this.inventory, o => o['.key'] === productKey)
+          e.retail_qty = 0
+          e.logs = {}
+          e.logs[sheetKey] = {
+            type: 'Import',
+            o_w_qty: 0,
+            o_r_qty: 0,
+            w_qty: e.wsale_qty,
+            r_qty: e.retail_qty
           }
-          this.$firebaseRefs.imports.child(tmp['.key'])
-            .child('entries').child(e.product['.key']).set(update)
-
-          update.category = e.product.category
-          update.chemical = e.product.chemical
-          update.class = e.product.class
-          update.uom_wsale = e.product.uom_wsale
-          update.uom_retail = e.product.uom_retail
-          update.uom_rate = e.product.uom_rate
-          update.remainder = e.product.remainder || 0
-
-          var ind = _.find(this.inventory, i => { return i['.key'] === e.product['.key'] })
-
           if (ind) {
-            update.quantity += parseInt(ind.quantity)
-            this.$firebaseRefs.inventory.child(e.product['.key'] + '/quantity')
-              .set(update.quantity)
-            this.$firebaseRefs.inventory.child(e.product['.key'] + '/remainder')
-              .set(update.remainder)
-            this.$firebaseRefs.inventory.child(e.product['.key'] + '/exp_date')
-              .set(update.exp_date)
-            this.$firebaseRefs.inventory.child(e.product['.key'] + '/unit_price')
-              .set(update.unit_price)
-            this.$firebaseRefs.inventory.child(e.product['.key'] + '/wsale_price')
-              .set(update.wsale_price)
-            this.$firebaseRefs.inventory.child(e.product['.key'] + '/retail_price')
-              .set(update.retail_price)
-          } else {
-            this.$firebaseRefs.inventory.child(e.product['.key']).set(update)
-          }
-          this.$firebaseRefs.inventory.child(e.product['.key'] + '/logs')
-            .child(Date.now()).set({
+            e.wsale_qty += parseInt(ind.wsale_qty)
+            e.retail_qty = ind.retail_qty
+            e.logs = ind.logs || {}
+            e.logs[sheetKey] = {
               type: 'Import',
-              quantity: update.quantity
-            })
+              o_w_qty: ind.wsale_qty || 0,
+              o_r_qty: ind.retail_qty || 0
+            }
+          }
+          this.$firebaseRefs.inventory.child(productKey).set(e)
         })
-        this.$store.dispatch('pushNotif', { message: 'Cập nhật Phiếu nhập thành công.', type: 'is-success' })
-        return true
-      } else {
-        this.$store.dispatch('pushNotif', { message: 'Cập nhật thất bại.', type: 'is-danger' })
-        return false
-      }
-    },
-    importSheetAndClose () {
-      var tmp = this.importSheet()
-      if (tmp) {
-        this.$router.push('/inventory')
-      }
-    },
-    importSheetAndReload () {
-      if (this.importSheet()) {
-        this.resetForm()
-        this.supplier = null
-        this.sheet_date = new Date()
-        this.note = null
-        this.entries = []
-        window.scrollTo(0, 0)
+        this.$store.dispatch('pushNotif', { message: 'Cập nhật thành công.', type: 'is-success' })
+        this.$router.replace('/importprint/' + sheetKey)
+      } catch (error) {
+        this.$store.dispatch('pushNotif', { message: `Cập nhật thất bại.\nLỗi ${error.message}`, type: 'is-danger' })
       }
     },
     addSupplier () {
       this.$dialog.prompt({
-        title: `Nhà Cung Cấp Mới`,
+        title: `Thêm Nhà Cung Cấp`,
         confirmText: 'OK',
         onConfirm: (value) => this.$firebaseRefs.suppliers.push({
-          value: value,
-          last_update: Date.now()
+          value: value
         }).then(() => {
           this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Cập nhật Nhà cung cấp thành công.' })
         }).catch(error => {
@@ -365,15 +338,6 @@ export default {
           console.log(error)
         })
       })
-    },
-    moment (time) {
-      return moment(time).format('DD/MM/YYYY')
-    },
-    toCurrency (number) {
-      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
-    },
-    toNumber (number) {
-      return new Intl.NumberFormat('vi-VN').format(number)
     }
   },
   created () {

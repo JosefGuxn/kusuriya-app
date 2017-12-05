@@ -4,7 +4,11 @@
       <div class="tile is-child hide-content">
         <button class="button is-primary" @click="print">
           <b-icon icon="print"></b-icon>
-          <span>Print</span>
+          <span>In phiếu</span>
+        </button>
+        <button class="button is-primary" @click="newSheet">
+          <b-icon icon="file-o"></b-icon>
+          <span>Phiếu mới</span>
         </button>
       </div>
       <div class="tile is-child">
@@ -28,7 +32,7 @@
               Ngày:
             </div>
             <div class="tile is-child">
-              {{moment(importsheet.date)}}
+              {{moment(sheet.date)}}
             </div>
           </div>
           <div class="tile is-parent">
@@ -36,7 +40,7 @@
               Nhà cung cấp:
             </div>
             <div class="tile is-child">
-              {{ importsheet.supplier }}
+              {{ sheet.supplier }}
             </div>
           </div>
         </div>
@@ -45,19 +49,19 @@
         <b-table :data="dataTable" bordered striped narrowed>
           <template scope="props">
             <b-table-column label="Sản Phẩm">
-              <p>{{ props.row.product_name }}</p>
+              <p>{{ props.row.product.name }}</p>
             </b-table-column>
             <b-table-column label="Số Lô">
               {{ props.row.stock_number }}
             </b-table-column>
             <b-table-column label="Số Lượng Nhập" width="170">
-              {{ props.row.quantity }}
+              {{ props.row.wsale_qty }}
             </b-table-column>          
             <b-table-column label="Giá Mua">
-              {{ toCurrency(props.row.unit_price) }}
+              {{ toCurrency(props.row.wsale_cost) }}
             </b-table-column>
             <b-table-column label="Thành Tiền">
-              <p>{{ toCurrency(props.row.quantity * props.row.unit_price) }}</p>
+              <p>{{ toCurrency(props.row.wsale_qty * props.row.wsale_cost) }}</p>
             </b-table-column>
           </template>
         </b-table>
@@ -68,30 +72,19 @@
 
 <script>
 import { db } from '@/firebase'
-import moment from 'moment'
 export default {
   data () {
     return {
-      importsheet: []
-    }
-  },
-  computed: {
-    dataTable () {
-      return Object.values(this.importsheet.entries)
+      sheet: [],
+      dataTable: []
     }
   },
   methods: {
     print () {
       window.print()
     },
-    moment (time) {
-      return moment(time).format('DD-MM-YYYY')
-    },
-    toCurrency (number) {
-      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
-    },
-    toNumber (number) {
-      return new Intl.NumberFormat('vi-VN').format(number)
+    newSheet () {
+      this.$router.replace('/newimportsheet')
     }
   },
   created () {
@@ -101,7 +94,8 @@ export default {
   },
   beforeMount () {
     db.ref('imports').child(this.$route.params.key).once('value', (val) => {
-      this.importsheet = val.val()
+      this.sheet = val.val()
+      this.dataTable = Object.values(val.child('entries').val())
     })
   }
 }

@@ -30,14 +30,20 @@
               <template scope="props">
                 <b-table-column field="date" label="Ngày Nhập" sortable>
                   <p>{{ moment(props.row.date) }}</p>
-                </b-table-column>              
+                </b-table-column>
 
                 <b-table-column label="Số Sản Phẩm Nhập" width="200" centered>
                   <p>{{ props.row.entries ? Object.keys(props.row.entries).length : 0 }}</p>
-                </b-table-column>               
+                </b-table-column>
 
                 <b-table-column label="Nhà Cung Cấp" centered>
                   {{ props.row.supplier }}
+                </b-table-column>
+
+                <b-table-column label="Tổng Tiền Mua" centered>
+                  <strong class="tag is-dark is-size-6">
+                    {{ toCurrency(props.row.grand_total) }}
+                  </strong>
                 </b-table-column>
 
                 <b-table-column width="100">
@@ -60,22 +66,23 @@
                     <b-table :data="Object.values(props.row.entries)" bordered striped narrowed>
                       <template scope="props">
                         <b-table-column label="Sản Phẩm">
-                          <p>{{ props.row.product_name }}</p>
+                          <p>{{ props.row.product.name }}</p>
                         </b-table-column>
                         <b-table-column label="Số Lô">
                           {{ props.row.stock_number }}
                         </b-table-column>
                         <b-table-column label="Số Lượng Nhập" width="180">
-                          {{ props.row.quantity }}
+                          {{ props.row.wsale_qty }}
                         </b-table-column>                       
                         <b-table-column label="Giá Mua">
-                          {{ toCurrency(props.row.unit_price) }}
+                          {{ toCurrency(props.row.wsale_cost) }}
                         </b-table-column>
                         <b-table-column label="Thành Tiền">
-                          <p>{{ toCurrency(props.row.quantity * props.row.unit_price) }}</p>
+                          <p>{{ toCurrency(props.row.wsale_qty * props.row.wsale_cost) }}</p>
                         </b-table-column>
                       </template>
                     </b-table>
+                    <small class="is-size-7">{{ moment(parseInt(props.row['.key']), 'DD/MM/YYYY HH:mm') }}</small>
                   </div>
                 </article>
               </template>
@@ -89,7 +96,6 @@
 
 <script>
   import { db } from '@/firebase'
-  import moment from 'moment'
   export default {
     data () {
       return {
@@ -119,6 +125,7 @@
         })
       },
       removeRow (product) {
+        // TODO recover data
         this.$firebaseRefs.imports.child(product['.key']).remove().then(() => {
           this.$store.dispatch('pushNotif', { type: 'is-success', message: 'Xóa Dữ liệu thành công.' })
           this.dataTable = this.imports
@@ -126,18 +133,6 @@
           this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
           console.log(error)
         })
-      },
-      print () {
-        this.$router.replace('/printexport')
-      },
-      moment (time) {
-        return moment(time).format('DD-MM-YYYY')
-      },
-      toCurrency (number) {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
-      },
-      toNumber (number) {
-        return new Intl.NumberFormat('vi-VN').format(number)
       }
     },
     created () {
