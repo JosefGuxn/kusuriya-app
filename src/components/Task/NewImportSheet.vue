@@ -162,7 +162,7 @@
               <money v-model="retailPrice" class="input"></money>
             </div>
             <div class="tile is-child">
-              <strong>Lợi nhuận {{ profit }}%</strong>             
+              <strong>Lợi nhuận {{ profit }}%</strong>
             </div>
           </div>
           <div class="panel-block">
@@ -178,9 +178,7 @@
 </template>
 
 <script>
-// TODO window close alert
 import { db } from '@/firebase'
-import moment from 'moment'
 import _ from 'lodash'
 export default {
   data () {
@@ -323,6 +321,7 @@ export default {
           this.$firebaseRefs.inventory.child(productKey).set(e)
         })
         this.$store.dispatch('pushNotif', { message: 'Cập nhật thành công.', type: 'is-success' })
+        this.isSaved = true
         this.$router.replace('/importprint/' + sheetKey)
       } catch (error) {
         this.$store.dispatch('pushNotif', { message: `Cập nhật thất bại.\nLỗi ${error.message}`, type: 'is-danger' })
@@ -341,15 +340,6 @@ export default {
           console.log(error)
         })
       })
-    },
-    moment (time) {
-      return moment(time).format('DD/MM/YYYY')
-    },
-    toCurrency (number) {
-      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
-    },
-    toNumber (number) {
-      return new Intl.NumberFormat('vi-VN').format(number)
     }
   },
   created () {

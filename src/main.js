@@ -17,12 +17,27 @@ import './firebase'
 
 import money from 'v-money'
 
+import moment from 'moment'
+
+Vue.mixin({
+  methods: {
+    moment (time) {
+      return moment(time).format('DD/MM/YYYY')
+    },
+    toCurrency (number) {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
+    },
+    toNumber (number) {
+      return new Intl.NumberFormat('vi-VN').format(number)
+    }
+  }
+})
+
 Vue.use(Buefy, {
   defaultIconPack: 'fa'
 })
 
 Vue.use(VueFire)
-// if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 

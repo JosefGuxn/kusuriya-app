@@ -74,7 +74,6 @@
 
 <script>
   import { db } from '@/firebase'
-  import moment from 'moment'
   export default {
     data () {
       return {
@@ -87,15 +86,6 @@
     methods: {
       print () {
         window.print()
-      },
-      moment (time) {
-        return moment(time).format('DD-MM-YYYY')
-      },
-      toCurrency (number) {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
-      },
-      toNumber (number) {
-        return new Intl.NumberFormat('vi-VN').format(number)
       }
     },
     created () {
