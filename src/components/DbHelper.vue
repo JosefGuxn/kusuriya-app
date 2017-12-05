@@ -40,6 +40,8 @@ export default {
             sum += i.entries[k].quantity * i.entries[k].unit_price
             this.$firebaseRefs.imports.child(i['.key'] + '/entries/' + k)
               .child('product').set({name: i.entries[k].product_name})
+            this.$firebaseRefs.imports.child(i['.key'] + '/entries/' + k)
+              .child('wsale_cost').set(i.entries[k].unit_price)
           })
           this.$firebaseRefs.imports.child(i['.key']).child('grand_total').set(sum)
         } else {
