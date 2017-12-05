@@ -32,7 +32,7 @@
               Ngày:
             </div>
             <div class="tile is-child">
-              {{moment(importsheet.date)}}
+              {{moment(sheet.date)}}
             </div>
           </div>
           <div class="tile is-parent">
@@ -40,7 +40,7 @@
               Nhà cung cấp:
             </div>
             <div class="tile is-child">
-              {{ importsheet.supplier }}
+              {{ sheet.supplier }}
             </div>
           </div>
         </div>
@@ -75,12 +75,8 @@ import { db } from '@/firebase'
 export default {
   data () {
     return {
-      importsheet: []
-    }
-  },
-  computed: {
-    dataTable () {
-      return Object.values(this.importsheet.entries)
+      sheet: [],
+      dataTable: []
     }
   },
   methods: {
@@ -98,7 +94,8 @@ export default {
   },
   beforeMount () {
     db.ref('imports').child(this.$route.params.key).once('value', (val) => {
-      this.importsheet = val.val()
+      this.sheet = val.val()
+      this.dataTable = Object.values(val.child('entries').val())
     })
   }
 }
