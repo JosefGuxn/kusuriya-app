@@ -6,6 +6,10 @@
           <b-icon icon="print"></b-icon>
           <span>Print</span>
         </button>
+        <button class="button is-primary" @click="newSheet">
+          <b-icon icon="file-o"></b-icon>
+          <span>Phiếu mới</span>
+        </button>
       </div>
       <div class="tile is-child">
         <p class="is-size-6">
@@ -28,7 +32,7 @@
               Ngày:
             </div>
             <div class="tile is-child">
-              {{moment(exportsheet.date)}}
+              {{moment(sheet.date)}}
             </div>
           </div>
           <div class="tile is-parent">
@@ -36,7 +40,7 @@
               Tổng tiền:
             </div>
             <div class="tile is-child">
-              {{toCurrency(exportsheet.grand_total)}}
+              {{toCurrency(sheet.grand_total)}}
             </div>
           </div>
         </div>
@@ -45,12 +49,11 @@
         <b-table :data="dataTable" bordered striped narrowed>
           <template scope="props">
             <b-table-column label="Sản Phẩm">
-              <p>{{ props.row.product_name }}</p>
+              <p>{{ props.row.product.name }}</p>
             </b-table-column>
             <b-table-column label="Số Lượng Xuất">
-              {{(props.row.quan_w ? + props.row.quan_w + ' ' + props.row.uom_wsale : '')
-                  + ' ' 
-                  + (props.row.quan_r ? + props.row.quan_r + ' ' + props.row.uom_retail : '')}}
+              {{(props.row.qty_w ? props.row.qty_w + ' ' + props.row.product.wsale_unit : '') }}
+               {{ (props.row.qty_r ? props.row.qty_r + ' ' + props.row.product.retail_unit : '')}}
             </b-table-column>
             <b-table-column label="Thành Tiền">
               <p>{{ toCurrency(props.row.total) }}</p>
@@ -67,17 +70,16 @@ import { db } from '@/firebase'
 export default {
   data () {
     return {
-      exportsheet: []
-    }
-  },
-  computed: {
-    dataTable () {
-      return Object.values(this.exportsheet.entries)
+      sheet: [],
+      dataTable: []
     }
   },
   methods: {
     print () {
       window.print()
+    },
+    newSheet () {
+      this.$router.replace('/newexportsheet')
     }
   },
   created () {
@@ -86,8 +88,9 @@ export default {
     }
   },
   beforeMount () {
-    db.ref('exports').child(this.$route.params.key).on('value', (val) => {
-      this.exportsheet = val.val()
+    db.ref('exports').child(this.$route.params.key).once('value', (val) => {
+      this.sheet = val.val()
+      this.dataTable = Object.values(val.child('entries').val())
     })
   }
 }

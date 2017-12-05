@@ -62,12 +62,12 @@
                     <b-table :data="Object.values(props.row.entries)" bordered striped narrowed>
                       <template scope="props">
                         <b-table-column label="Sản Phẩm">
-                          <p>{{ props.row.product_name }}</p>
+                          <p>{{ props.row.product.name }}</p>
                         </b-table-column>
                         <b-table-column label="Số Lượng Xuất">
-                          {{(props.row.quan_w ? + props.row.quan_w + ' ' + props.row.uom_wsale : '')
+                          {{(props.row.qty_w ? + props.row.qty_w + ' ' + props.row.product.wsale_unit : '')
                               + ' ' 
-                              + (props.row.quan_r ? + props.row.quan_r + ' ' + props.row.uom_retail : '')}}
+                              + (props.row.qty_r ? + props.row.qty_r + ' ' + props.row.product.retail_unit : '')}}
                         </b-table-column>
                         <b-table-column label="Thành Tiền">
                           <p>{{ toCurrency(props.row.total) }}</p>
@@ -87,7 +87,6 @@
 
 <script>
   import { db } from '@/firebase'
-  import moment from 'moment'
   export default {
     data () {
       return {
@@ -124,18 +123,6 @@
           this.$store.dispatch('pushNotif', { type: 'is-danger', message: 'Cập nhật thất bại!' })
           console.log(error)
         })
-      },
-      print () {
-        this.$router.replace('/printexport')
-      },
-      moment (time) {
-        return moment(time).format('DD-MM-YYYY')
-      },
-      toCurrency (number) {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number)
-      },
-      toNumber (number) {
-        return new Intl.NumberFormat('vi-VN').format(number)
       }
     },
     created () {
