@@ -28,8 +28,8 @@
               <small>@{{row.product.category}}</small>
               <small style="float:right;">Cập nhật {{lastUpdate(row.logs)}}</small>
               <br>
-              &nbsp;&nbsp;Còn <b>{{row.wsale_qty}} {{row.wsale_unit}} 
-                {{row.retail_qty ? row.retail_qty + ' ' + row.retail_unit : ''}}</b>
+              &nbsp;&nbsp;Còn <b>{{row.wsale_qty}} {{row.product.wsale_unit}} 
+                {{row.retail_qty ? row.retail_qty + ' ' + row.product.retail_unit : ''}}</b>
               <br>
               &nbsp;&nbsp;Hạn dùng đến <b>{{moment(row.exp_date)}}</b>
             </div>
