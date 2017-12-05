@@ -19,13 +19,15 @@ export default {
       options: [
         {id: 0, opt: 'Imports_db'},
         {id: 1, opt: 'Inventory_db'},
-        {id: 2, opt: 'Products_db'}
+        {id: 2, opt: 'Products_db'},
+        {id: 3, opt: 'Exports_db'}
       ],
       selectedOpt: null
     }
   },
   firebase: {
     imports: db.ref('imports'),
+    exports: db.ref('exports'),
     inventory: db.ref('inventory'),
     products: db.ref('products')
   },
@@ -37,7 +39,7 @@ export default {
           Object.keys(i.entries).forEach(k => {
             sum += i.entries[k].quantity * i.entries[k].unit_price
             this.$firebaseRefs.imports.child(i['.key'] + '/entries/' + k)
-              .child('product').set({product_name: i.entries[k].product_name})
+              .child('product').set({name: i.entries[k].product_name})
           })
           this.$firebaseRefs.imports.child(i['.key']).child('grand_total').set(sum)
         } else {
@@ -85,6 +87,24 @@ export default {
         this.$firebaseRefs.products.child(p['.key']).child('uom_retail').remove()
       })
     },
+    exportsDB () {
+      this.exports.forEach(i => {
+        if (i.entries) {
+          Object.keys(i.entries).forEach(k => {
+            var update = i.entries[k]
+            update.product = {
+              name: i.entries[k].product_name,
+              wsale_unit: i.entries[k].uom_wsale,
+              retail_unit: i.entries[k].uom_retail
+            }
+            update.qty_w = i.entries[k].quan_w
+            update.qty_r = i.entries[k].quan_r
+            this.$firebaseRefs.exports.child(i['.key'] + '/entries/' + k)
+              .set(update)
+          })
+        }
+      })
+    },
     help () {
       switch (this.selectedOpt) {
         case 0:
@@ -95,6 +115,9 @@ export default {
           break
         case 2:
           this.productsDB()
+          break
+        case 3:
+          this.exportsDB()
           break
         default:
           break
