@@ -42,6 +42,8 @@ export default {
               .child('product').set({name: i.entries[k].product_name})
             this.$firebaseRefs.imports.child(i['.key'] + '/entries/' + k)
               .child('wsale_cost').set(i.entries[k].unit_price)
+            this.$firebaseRefs.imports.child(i['.key'] + '/entries/' + k)
+              .child('wsale_qty').set(i.entries[k].quantity)
           })
           this.$firebaseRefs.imports.child(i['.key']).child('grand_total').set(sum)
         } else {
