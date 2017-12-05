@@ -5,7 +5,7 @@
         <b-panel has-custom-template>
           <div class="is-size-3 tile" slot="header">
             <strong class="tile is-child has-text-primary">
-              Phiếu nhập kho
+              Phiếu NHẬP
             </strong>
             <div class="tile is-child is-4 has-text-right">
               <button class="button is-primary" @click="saveSheet">
@@ -49,14 +49,14 @@
               <div class="tile is-child is-6">
                 <b-field>
                   <div class="control">
-                    <b-input v-model="note" type="textarea"></b-input>
+                    <b-input v-model="note"></b-input>
                   </div>
                 </b-field>
               </div>
             </div>
           </div>
           <div class="content" style="margin-top: 20px">
-            <b-table :data="entries" narrowed bordered>
+            <b-table :data="entries" narrowed bordered :row-class="(row, index) => row.wsale_qty < 0 ? 'is-warning' : ''">
               <template slot="header" scope="props">
                 <strong class="is-size-5">
                   {{ props.column.label }}
@@ -166,7 +166,7 @@
             </div>
           </div>
           <div class="panel-block">
-            <button class="button is-success is-fullwidth" @click="addRow">
+            <button class="button is-success is-fullwidth is-outlined" @click="addRow">
               <b-icon icon="plus"></b-icon>
               <strong>Thêm</strong>
             </button>
@@ -198,8 +198,7 @@ export default {
       expDate: new Date(),
       wsaleCost: 0,
       wSalePrice: 0,
-      retailPrice: 0,
-      isSaved: false
+      retailPrice: 0
     }
   },
   firebase: {
@@ -301,7 +300,7 @@ export default {
           var ind = _.find(this.inventory, o => o['.key'] === productKey)
           e.retail_qty = 0
           e.logs = {}
-          e.logs[Date.now()] = {
+          e.logs[sheetKey] = {
             type: 'Import',
             o_w_qty: 0,
             o_r_qty: 0,
@@ -312,7 +311,7 @@ export default {
             e.wsale_qty += parseInt(ind.wsale_qty)
             e.retail_qty = ind.retail_qty
             e.logs = ind.logs || {}
-            e.logs[Date.now()] = {
+            e.logs[sheetKey] = {
               type: 'Import',
               o_w_qty: ind.wsale_qty || 0,
               o_r_qty: ind.retail_qty || 0
@@ -321,7 +320,6 @@ export default {
           this.$firebaseRefs.inventory.child(productKey).set(e)
         })
         this.$store.dispatch('pushNotif', { message: 'Cập nhật thành công.', type: 'is-success' })
-        this.isSaved = true
         this.$router.replace('/importprint/' + sheetKey)
       } catch (error) {
         this.$store.dispatch('pushNotif', { message: `Cập nhật thất bại.\nLỗi ${error.message}`, type: 'is-danger' })
